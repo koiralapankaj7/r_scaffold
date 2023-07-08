@@ -229,15 +229,18 @@ class _RScaffoldState extends State<RScaffold>
   }
 
   @override
-  RBreakPoint get breakpoint => widget.menu.theme.breakPoint;
+  Iterable<MapEntry<String, double>> get breakpoints => [
+        MapEntry('S', menuTheme.breakPoint.drawer),
+        MapEntry('M', menuTheme.breakPoint.rail),
+      ];
 
   @override
-  void onBreakpointInit(String screen) =>
-      _menuController._onBreakpointInit(screen);
+  void onBreakpointInit(MapEntry<String, double> breakpoint) =>
+      _menuController._onBreakpointInit(breakpoint);
 
   @override
-  void onBreakpointChange(String screen, bool forward) =>
-      _menuController._onBreakpointChange(screen, forward);
+  void onBreakpointChange(MapEntry<String, double> breakpoint, bool forward) =>
+      _menuController._onBreakpointChange(breakpoint, forward);
 
   @override
   Widget build(BuildContext context) {
@@ -365,18 +368,18 @@ class RMenuController extends Listenable with ChangeNotifier {
     return switch (type) {
       'S' => RMenuType.drawer,
       'M' => RMenuType.rail,
-      'L' => RMenuType.extended,
+      'unknown' => RMenuType.extended,
       _ => throw UnsupportedError('Screen type not found!'),
     };
   }
 
-  void _onBreakpointInit(String screen) {
-    _currentType = _prevType = _menu.type ?? _typeFromString(screen);
+  void _onBreakpointInit(MapEntry<String, double> breakpoint) {
+    _currentType = _prevType = _menu.type ?? _typeFromString(breakpoint.key);
     _controller.value = _valueFor(_currentType);
   }
 
-  void _onBreakpointChange(String screen, bool forward) {
-    _move(_typeFromString(screen), forward: forward);
+  void _onBreakpointChange(MapEntry<String, double> breakpoint, bool forward) {
+    _move(_typeFromString(breakpoint.key), forward: forward);
   }
 
   void _move(RMenuType type, {bool? forward}) {

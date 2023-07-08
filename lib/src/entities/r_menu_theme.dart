@@ -169,3 +169,71 @@ class RBreakPoint {
   ///
   final double rail;
 }
+
+// ///
+// class RMenuConstraints {
+//   ///
+//   RMenuConstraints({
+//     double? drawerWidth,
+//     double? railMinWidth,
+//     double? railMaxWidth,
+//   })  : drawerWidth = drawerWidth ?? _kMenuWidth,
+//         railMinWidth = railMinWidth ?? _kMenuWidth,
+//         railMaxWidth = railMaxWidth ?? _kMenuWidth;
+
+//   ///
+//   final double drawerWidth;
+
+//   ///
+//   final double railMinWidth;
+
+//   ///
+//   final double railMaxWidth;
+// }
+
+// ///
+// sealed class MenuType {
+//   MenuType._();
+
+//   ///
+//   factory MenuType.drawer({double? width}) = DrawerMenu;
+
+//   ///
+//   factory MenuType.rail({
+//     double? minWidth,
+//     double? maxWidth,
+//   }) = RailMenu;
+// }
+
+// ///
+// class DrawerMenu extends MenuType {
+//   ///
+//   DrawerMenu({double? width})
+//       : width = width ?? _kMenuWidth,
+//         super._();
+
+//   ///
+//   final double width;
+// }
+
+// ///
+// class RailMenu extends MenuType {
+//   ///
+//   RailMenu({
+//     double? minWidth,
+//     double? maxWidth,
+//     bool? extended,
+//   })  : minWidth = minWidth ?? _kRailWidth,
+//         maxWidth = maxWidth ?? _kMenuWidth,
+//         extended = extended ?? false,
+//         super._();
+
+//   ///
+//   final double minWidth;
+
+//   ///
+//   final double maxWidth;
+
+//   ///
+//   final bool extended;
+// }
