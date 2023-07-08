@@ -134,7 +134,7 @@ class _RScaffoldState extends State<RScaffold>
         vsync: this,
         menu: widget.menu,
       )
-      ..addListener(_rebuild);
+      ..addAnimationListener(_rebuild);
   }
 
   void _rebuild() {
@@ -229,10 +229,13 @@ class _RScaffoldState extends State<RScaffold>
   }
 
   @override
-  Iterable<MapEntry<String, double>> get breakpoints => [
-        MapEntry('S', menuTheme.breakPoint.drawer),
-        MapEntry('M', menuTheme.breakPoint.rail),
-      ];
+  Iterable<MapEntry<String, double>> get breakpoints =>
+      menuTheme.breakPoint == RBreakPoint.none
+          ? []
+          : [
+              MapEntry('S', menuTheme.breakPoint.drawer),
+              MapEntry('M', menuTheme.breakPoint.rail),
+            ];
 
   @override
   void onBreakpointInit(MapEntry<String, double> breakpoint) =>
@@ -325,6 +328,7 @@ class RMenuController extends Listenable with ChangeNotifier {
   late RMenuType _prevType;
   late RMenuType _currentType;
   // RMenuType? _usePreference;
+  VoidCallback? _animationListener;
 
   void _init({
     required TickerProvider vsync,
@@ -416,9 +420,9 @@ class RMenuController extends Listenable with ChangeNotifier {
   RMenuType get type => _currentType;
 
   ///
-  @override
-  void addListener(VoidCallback listener) {
+  void addAnimationListener(VoidCallback listener) {
     _controller.addListener(listener);
+    _animationListener = listener;
   }
 
   /// Toggle between Extended and Rail
@@ -450,6 +454,9 @@ class RMenuController extends Listenable with ChangeNotifier {
 
   @override
   void dispose() {
+    if (_animationListener != null) {
+      _controller.removeListener(_animationListener!);
+    }
     _controller.dispose();
     super.dispose();
   }
