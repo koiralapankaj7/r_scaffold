@@ -24,6 +24,7 @@ class MenuItemDivider extends StatelessWidget {
     if (item.dividerAbove || item.dividerBelow) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           if (item.dividerAbove) const Divider(thickness: 1, height: 1),
           child,

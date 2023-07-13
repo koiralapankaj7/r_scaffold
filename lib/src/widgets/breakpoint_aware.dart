@@ -4,20 +4,20 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 ///
-mixin BreakpointAware<T extends StatefulWidget> on State<T> {
-  String _currentType = '';
+mixin BreakpointAware<T extends StatefulWidget, V extends Object> on State<T> {
+  V? _currentType;
   Size? _prevSize;
-  List<MapEntry<String, double>>? _sortedBreakpoints;
+  List<MapEntry<V, double>>? _sortedBreakpoints;
 
   ///
   // ignore: avoid_positional_boolean_parameters
-  void onBreakpointChange(MapEntry<String, double> breakpoint, bool forward) {}
+  void onBreakpointChange(MapEntry<V, double>? breakpoint, bool forward) {}
 
   ///
-  void onBreakpointInit(MapEntry<String, double> breakpoint) {}
+  void onBreakpointInit(MapEntry<V, double>? breakpoint) {}
 
-  MapEntry<String, double> _getSize(Size size) {
-    var bp = MapEntry('unknown', size.width);
+  MapEntry<V, double>? _getSize(Size size) {
+    MapEntry<V, double>? bp;
     for (var i = 0; i < _sortedBreakpoints!.length; i++) {
       final breakpoint = _sortedBreakpoints![i];
       if (size.width < breakpoint.value) {
@@ -34,18 +34,18 @@ mixin BreakpointAware<T extends StatefulWidget> on State<T> {
         breakpoints.sorted((a, b) => a.value.compareTo(b.value));
     final bp = _getSize(size);
     if (_prevSize != null) {
-      if (bp.key != _currentType) {
+      if (bp?.key != _currentType) {
         onBreakpointChange(bp, size.width > _prevSize!.width);
       }
     } else {
       onBreakpointInit(bp);
     }
-    _currentType = bp.key;
+    _currentType = bp?.key;
     _prevSize = size;
   }
 
   ///
-  Iterable<MapEntry<String, double>> get breakpoints;
+  Iterable<MapEntry<V, double>> get breakpoints;
 
   @mustCallSuper
   @override

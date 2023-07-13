@@ -1,231 +1,149 @@
 // ignore_for_file: always_use_package_imports
 
 import 'package:flutter/material.dart';
-import 'package:playground/src/extensions.dart';
+import 'package:playground/src/widgets/widgets.dart';
 
 import '../entities/entities.dart';
 
 /// Example of a leading item for the entire menu.
-class MenuHeader extends StatefulWidget {
+class ResponsiveMenuHeader extends StatelessWidget {
   ///
-  const MenuHeader({
-    required this.menu,
-    required this.extendedAnimation,
+  const ResponsiveMenuHeader({
+    this.avatar,
+    this.title,
+    this.subtitle,
+    this.avatarLabel,
+    this.trailing,
+    this.padding,
+    this.titleSpacing,
+    this.onPressed,
     super.key,
   });
 
   ///
-  final RMenu menu;
+  final Widget? avatar;
+
+  /// A label for the avatar for the leading menu item.
+  final String? avatarLabel;
 
   ///
-  final Animation<double> extendedAnimation;
+  final Widget? title;
 
-  @override
-  State<MenuHeader> createState() => _MenuHeaderState();
-}
+  /// A subtitle for leading menu item.
+  final Widget? subtitle;
 
-class _MenuHeaderState extends State<MenuHeader> {
-  // final bool _collapsed = true;
-  late final FocusNode _focusNode = FocusNode();
-  late final FocusNode _buttonFocusNode =
-      FocusNode(debugLabel: 'Header Menu Button');
+  ///
+  final Widget? trailing;
 
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    _buttonFocusNode.dispose();
-    super.dispose();
-  }
+  ///
+  final EdgeInsetsGeometry? padding;
+
+  ///
+  final double? titleSpacing;
+
+  ///
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final labelFadeAnimation = widget.extendedAnimation.drive(
-      CurveTween(curve: const Interval(0.20, 1)),
-    );
-
     final theme = Theme.of(context);
     final primaryTextTheme = theme.primaryTextTheme;
-    final header = widget.menu.header!;
 
-    final Widget child = InkWell(
-      onTap: header.onPressed,
-      // onTap: () {
-      //   // _focusNode.requestFocus();
-      //   if (header.popupDropdown) {
-      //     //
-      //   } else {
-      //     setState(() {
-      //       _collapsed = !_collapsed;
-      //     });
-      //   }
-      // },
-      child: Row(
-        children: [
-          // Avatar
-          SizedBox.fromSize(
-            size: Size.square(widget.menu.theme.minWidth),
-            child: Padding(
-              padding:
-                  EdgeInsets.all(widget.menu.theme.itemMargin.horizontal * 0.5),
-              child: CircleAvatar(
-                backgroundColor: theme.colorScheme.primary,
-                child: Text(
-                  header.avatarLabel ?? '',
-                  style: primaryTextTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
+    final menuTheme = RMenuTheme.of(context);
+    final labelFadeAnimation = RMenuController.of(context).sizeAnimation.drive(
+          CurveTween(curve: const Interval(0.20, 1)),
+        );
+
+    final pad = padding ??
+        EdgeInsets.symmetric(
+          horizontal: menuTheme.itemMargin.horizontal * 0.5,
+          vertical: 16,
+        );
+
+    final child = Padding(
+      padding: pad,
+      child: IntrinsicHeight(
+        child: ClipRRect(
+          child: OverflowBox(
+            alignment: Alignment.centerLeft,
+            maxWidth: menuTheme.maxPoint.width - pad.horizontal,
+            child: Row(
+              children: [
+                // Avatar
+                SizedBox(
+                  width: menuTheme.minPoint.width,
+                  child: avatar ??
+                      CircleAvatar(
+                        backgroundColor: theme.colorScheme.primary,
+                        child: Text(
+                          avatarLabel ?? '',
+                          style: primaryTextTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                 ),
-              ),
-            ),
-          ),
 
-          // Body
-          Expanded(
-            child: IntrinsicHeight(
-              child: ClipRect(
-                child: OverflowBox(
-                  alignment: Alignment.centerLeft,
-                  maxWidth: widget.menu.theme.railMaxWidth -
-                      widget.menu.theme.minWidth,
+                // Body
+                Expanded(
                   child: FadeTransition(
                     opacity: labelFadeAnimation,
                     child: Row(
                       children: [
-                        // Title and subtitle
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Title
-                                if (header.title != null)
-                                  DefaultTextStyle(
-                                    style: theme.textTheme.bodyLarge!.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    child: header.title!,
-                                  ),
+                        // Title spacing
+                        if (titleSpacing != null) SizedBox(width: titleSpacing),
 
-                                // Subtitle
-                                if (header.subtitle != null) ...[
-                                  const SizedBox(height: 2),
-                                  DefaultTextStyle(
-                                    style: theme.textTheme.bodyMedium!.copyWith(
-                                      color: theme.hintColor,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    child: header.subtitle!,
+                        // Body
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Title
+                              if (title != null)
+                                DefaultTextStyle(
+                                  style: theme.textTheme.bodyLarge!.copyWith(
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                ],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  child: title!,
+                                ),
+
+                              // Subtitle
+                              if (subtitle != null) ...[
+                                const SizedBox(height: 2),
+                                DefaultTextStyle(
+                                  style: theme.textTheme.bodyMedium!.copyWith(
+                                    color: theme.hintColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  child: subtitle!,
+                                ),
                               ],
-                            ),
+                            ],
                           ),
                         ),
 
-                        // Expanded icon
-                        // if (header.dropdownItems.isNotEmpty &&
-                        //     !header.popupDropdown)
-                        //   ExpandIcon(
-                        //     isExpanded: !_collapsed,
-                        //     padding: EdgeInsets.zero,
-                        //     onPressed: (_) {
-                        //       if (header.popupDropdown) {
-                        //         //
-                        //       } else {
-                        //         _focusNode.requestFocus();
-                        //         setState(() {
-                        //           _collapsed = !_collapsed;
-                        //         });
-                        //       }
-                        //     },
-                        //   ),
-
-                        // Dropdown menu
-                        if (header.dropdownItems.isNotEmpty)
-                          MenuAnchor(
-                            // childFocusNode: _buttonFocusNode,
-                            menuChildren: header.dropdownItems,
-                            builder: (context, controller, child) {
-                              return IconButton(
-                                onPressed: () {
-                                  if (controller.isOpen) {
-                                    controller.close();
-                                  } else {
-                                    controller.open();
-                                  }
-                                },
-                                icon: const Icon(Icons.arrow_drop_down),
-                              );
-                            },
-                          ),
+                        // Trailing
+                        if (trailing != null) trailing!,
                       ],
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
 
-    //
-    // if (header.dropdownItems.isNotEmpty && !header.popupDropdown) {
-    //   child = Column(
-    //     children: <Widget>[
-    //       // Content
-    //       child,
-
-    //       // Dropdown items
-    //       AnimatedSwitcher(
-    //         duration: const Duration(milliseconds: 200),
-    //         transitionBuilder: (Widget child, Animation<double> animation) {
-    //           return SizeTransition(
-    //             sizeFactor: animation,
-    //             child: child,
-    //           );
-    //         },
-    //         child: _collapsed || widget.extendedAnimation.value != 1
-    //             ? const SizedBox.shrink()
-    //             : IntrinsicHeight(
-    //                 child: OverflowBox(
-    //                   alignment: Alignment.centerLeft,
-    //                   maxWidth: widget.menu.theme.maxWidth,
-    //                   child: Padding(
-    //                     padding: const EdgeInsets.only(bottom: 8),
-    //                     child: Row(
-    //                       children: [
-    //                         const Spacer(),
-    //                         Column(
-    //                           children: header.dropdownItems.map((e) {
-    //                             return MenuItemButton(
-    //                               onPressed: e.onPressed,
-    //                               shortcut: e.shortcut,
-    //                               child: child,
-    //                             );
-    //                           }).toList(),
-    //                         ),
-    //                       ],
-    //                     ),
-    //                   ),
-    //                 ),
-    //               ),
-    //       ),
-    //     ],
-    //   );
-    // }
+    if (onPressed != null) {
+      return InkWell(onTap: onPressed, child: child);
+    }
 
     return child;
-
-    // return Focus(
-    //   focusNode: _focusNode,
-    //   child: child,
-    // );
   }
 }

@@ -81,34 +81,25 @@ extension RAppBarX on AppBar {
   }
 }
 
-///
-extension ResponsiveMenuTypeX on RMenuType {
-  ///
-  bool get isDrawer => this == RMenuType.drawer;
+// ///
+// extension ResponsiveMenuTypeX on RMenuType {
+//   ///
+//   bool get isDrawer => this == RMenuType.drawer;
 
-  ///
-  bool get isRail => this == RMenuType.rail;
+//   ///
+//   bool get isRail => this == RMenuType.rail;
 
-  ///
-  bool get isExtended => this == RMenuType.extended;
+//   ///
+//   bool get isExtended => this == RMenuType.extended;
 
-  ///
-  bool operator >(RMenuType other) => value > other.value;
+//   ///
+//   bool operator >(RMenuType other) => value > other.value;
 
-  ///
-  bool operator <(RMenuType other) => value < other.value;
-}
+//   ///
+//   bool operator <(RMenuType other) => value < other.value;
+// }
 
 // RMenuType.rail > RMenuType.drawer => true;
-
-///
-extension ResponsiveMenuThemeX on RMenuTheme {
-  ///
-  double get minWidth => railMinWidth + itemMargin.horizontal;
-
-  ///
-  double get railPercent => minWidth / railMaxWidth;
-}
 
 ///
 extension RIterableX on Iterable<RMenuItem> {

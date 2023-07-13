@@ -38,13 +38,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     // NavigationRail
+
     return RScaffold(
       menu: RMenu(
         // type: RMenuType.rail, // TODO(kopan7): In mobile this should not consider
         theme: RMenuTheme(
           elevation: 0,
           // backgroundColor: Colors.amber,
-          indicatorColor: theme.colorScheme.primary.withAlpha(30),
+          indicatorColor: theme.colorScheme.primary.withAlpha(60),
           radius: BorderRadius.circular(8),
           // indicatorShape: RoundedRectangleBorder(
           //   side: const BorderSide(),
@@ -64,7 +65,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           //   color: theme.disabledColor,
           // ),
           // useIndicator: false,
-
+          // closable: true,
+          // itemMargin: const EdgeInsets.symmetric(horizontal: 16),
+          // maxPoint: const RPoint.max(width: 350),
+          // minPoint: const RPoint.min(width: 70),
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -75,50 +79,75 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ],
           ),
         ),
-        header: RMenuHeader(
+        header: ResponsiveMenuHeader(
+          // onPressed: () {},
           avatarLabel: 'PK',
           title: const Text('Pankaj Koirala'),
+          titleSpacing: 8,
           // subtitle: Text('Software Enginner'),
           // popupDropdown: true,
-          dropdownItems: <MenuItemButton>[
-            // Logout
-            MenuItemButton(
-              onPressed: () {
-                debugPrint('Logout selected');
-              },
-              child: const Row(
-                children: <Widget>[
-                  Icon(Icons.logout),
-                  SizedBox(width: 16),
-                  Text('Logout'),
-                ],
+          trailing: MenuAnchor(
+            // childFocusNode: _buttonFocusNode,
+            menuChildren: <MenuItemButton>[
+              // Logout
+              MenuItemButton(
+                onPressed: () {
+                  debugPrint('Logout selected');
+                },
+                child: const Row(
+                  children: <Widget>[
+                    Icon(Icons.logout),
+                    SizedBox(width: 16),
+                    Text('Logout'),
+                  ],
+                ),
               ),
-            ),
-            // Setting
-            MenuItemButton(
-              onPressed: () {
-                debugPrint('Setting selected');
-              },
-              shortcut: const SingleActivator(
-                LogicalKeyboardKey.comma,
-                control: true,
+              // Setting
+              MenuItemButton(
+                onPressed: () {
+                  debugPrint('Setting selected');
+                },
+                shortcut: const SingleActivator(
+                  LogicalKeyboardKey.comma,
+                  control: true,
+                ),
+                child: const Row(
+                  children: <Widget>[
+                    Icon(Icons.settings),
+                    SizedBox(width: 16),
+                    Text('Settings'),
+                  ],
+                ),
               ),
-              child: const Row(
-                children: <Widget>[
-                  Icon(Icons.settings),
-                  SizedBox(width: 16),
-                  Text('Settings'),
-                ],
-              ),
-            ),
-          ],
+            ],
+            builder: (context, controller, child) {
+              return IconButton(
+                onPressed: () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
+                },
+                icon: const Icon(Icons.arrow_drop_down),
+              );
+            },
+          ),
         ),
         items: [
           // Normal items
           ...List.generate(10, (index) {
             return RMenuItem(
               icon: const Icon(Icons.info),
-              label: Text('Item $index'),
+              // label: Text('Item $index'),
+              label: Row(
+                children: [
+                  Expanded(child: Text('Item $index')),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.remove),
+                  // const SizedBox(width: 16),
+                ],
+              ),
               dividerAbove: index == 4,
               dividerBelow: index == 5 || index == 8,
               enabled: index != 5,
@@ -134,9 +163,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           RMenuItem.dropdown(
             dividerAbove: true,
             dividerBelow: true,
-            builder: (context, animation) {
-              return const Text('Dropdown');
-            },
+            // leading: const CircleAvatar(
+            //   child: Icon(Icons.arrow_drop_down),
+            // ),
+            title: const Text('Dropdown'),
             items: List.generate(3, (index) {
               return RMenuItem(
                 icon: const Icon(Icons.wallet),
@@ -154,7 +184,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           RMenuItem.custom(
             dividerBelow: true,
             dividerAbove: true,
-            builder: (context, animation) {
+            builder: (context) {
               return Container(
                 height: 100,
                 color: Colors.amber,
@@ -163,8 +193,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           ),
         ],
       ),
-      body: const Center(
-        child: Text('Body'),
+      body: Container(
+        color: Colors.amber,
+        alignment: Alignment.center,
+        child: const Text('Body'),
       ),
     );
   }
