@@ -11,13 +11,13 @@ import 'widgets/widgets.dart';
 @immutable
 class RMenu {
   ///
-  RMenu({
+  const RMenu({
     required this.items,
     this.header,
     this.leading,
     this.trailing,
     RMenuTheme? theme,
-  }) : theme = theme ?? RMenuTheme();
+  }) : theme = theme ?? const RMenuTheme();
 
   ///
   final List<RMenuItem> items;
@@ -36,9 +36,9 @@ class RMenu {
 }
 
 /// Responsive Scaffold
-class RScaffold extends StatefulWidget {
+class ResponsiveScaffold extends StatefulWidget {
   ///
-  const RScaffold({
+  const ResponsiveScaffold({
     required this.menu,
     required this.body,
     super.key,
@@ -136,85 +136,86 @@ class RScaffold extends StatefulWidget {
   final bool extendBody;
 
   @override
-  State<RScaffold> createState() => _RScaffoldState();
+  State<ResponsiveScaffold> createState() => _ResponsiveScaffoldState();
 }
 
 ///
-class _RScaffoldState extends State<RScaffold> {
+class _ResponsiveScaffoldState extends State<ResponsiveScaffold> {
   final _key = GlobalKey<ScaffoldState>();
   late final RMenuController _menuController;
 
   @override
   void initState() {
     super.initState();
-    _menuController = RMenuController();
+    _menuController = RMenuController()..addListener(_menuListener);
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   _shortcutsEntry?.dispose();
-  //   // Collect the shortcuts from the different menu selections so that they can
-  //   // be registered to apply to the entire app. Menus don't register their
-  //   // shortcuts, they only display the shortcut hint text.
-  //   final shortcuts = <ShortcutActivator, Intent>{
-  //     for (final item in widget.menu.header!.dropdownItems)
-  //       if (item.shortcut != null)
-  //         item.shortcut!: VoidCallbackIntent(() => item.onPressed?.call()),
-  //   };
-  //   // Register the shortcuts with the ShortcutRegistry so that they are
-  //   // available to the entire application.
-  //   _shortcutsEntry = ShortcutRegistry.of(context).addAll(shortcuts);
-  // }
+  void _menuListener() {
+    if (!_menuController.currentState.isClosed &&
+        _key.currentState!.isDrawerOpen) {
+      // _key.currentState!.closeDrawer();
+    }
+  }
 
   AppBar _appBar() => (widget.appBar ?? AppBar()).copyWith(
-        // Some logic to show the implicit menu button on AppBar when
-        // there is no rail or menu.
-        // automaticallyImplyLeading:
-        //     _current.isDrawer && !_extendedController.isAnimating,
         leading: IconButton(
           padding: EdgeInsets.zero,
           icon: const Icon(Icons.menu),
           onPressed: () {
-            // if (_menuController.type.isDrawer) {
-            //   _key.currentState?.openDrawer();
-            // } else {
-            //   _menuController.toggle();
-            // }
-            // _menuController.toggle();
-            _menuController.toggle();
+            if (_menuController.currentState is ClosedState) {
+              _key.currentState?.openDrawer();
+            } else {
+              _menuController.toggle();
+            }
           },
         ),
       );
 
   @override
   void dispose() {
-    _menuController.dispose();
+    _menuController
+      ..removeListener(_menuListener)
+      ..dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final responsiveMenu = ResponsiveMenu(
+      items: widget.menu.items,
+      header: widget.menu.header,
+      leading: widget.menu.leading,
+      trailing: widget.menu.trailing,
+      theme: widget.menu.theme,
+      // type: widget.menu.type,
+      // onTap: _menuController.currentState.isClosed
+      //     ? Navigator.of(context).pop
+      //     : null,
+      controller: _menuController,
+    );
+
     return Scaffold(
       key: _key,
       appBar: _appBar(),
-      // The menu content when used in the Drawer.
-      // drawer: ConstrainedBox(
-      //   constraints: BoxConstraints.expand(
-      //     width: menuTheme.railMaxWidth,
-      //   ),
-      //   child: Drawer(
-      //     child: ResponsiveMenu(
-      //       menu: widget.menu,
-      //       extendedAnimation: Tween<double>(begin: 1, end: 1)
-      //           .animate(_menuController.sizeAnimation),
-      //       onTap: (item) {
-      //         item.onPressed?.call();
-      //         Navigator.of(context).pop();
-      //       },
-      //     ),
-      //   ),
-      // ),
+      drawer: ConstrainedBox(
+        constraints: BoxConstraints.expand(
+          width: widget.menu.theme.maxSize.width,
+        ),
+        child: Drawer(
+          child: responsiveMenu,
+          // child: ResponsiveMenu(
+          //   items: widget.menu.items,
+          //   header: widget.menu.header,
+          //   leading: widget.menu.leading,
+          //   trailing: widget.menu.trailing,
+          //   theme: widget.menu.theme,
+          //   // .copyWith(
+          //   //   responsive: false,
+          //   // ),
+          //   onTap: Navigator.of(context).pop,
+          // ),
+        ),
+      ),
       floatingActionButton: widget.floatingActionButton,
       floatingActionButtonLocation: widget.floatingActionButtonLocation,
       floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
@@ -244,18 +245,16 @@ class _RScaffoldState extends State<RScaffold> {
           ),
           LayoutId(
             id: 'menu',
-            child: ResponsiveMenu(
-              items: widget.menu.items,
-              header: widget.menu.header,
-              leading: widget.menu.leading,
-              trailing: widget.menu.trailing,
-              theme: widget.menu.theme,
-              // type: widget.menu.type,
-              onTap: (item) {
-                item.onPressed?.call();
-              },
-              controller: _menuController,
-            ),
+            child: responsiveMenu,
+            // child: ResponsiveMenu(
+            //   items: widget.menu.items,
+            //   header: widget.menu.header,
+            //   leading: widget.menu.leading,
+            //   trailing: widget.menu.trailing,
+            //   theme: widget.menu.theme,
+            //   // type: widget.menu.type,
+            //   controller: _menuController,
+            // ),
           ),
         ],
       ),

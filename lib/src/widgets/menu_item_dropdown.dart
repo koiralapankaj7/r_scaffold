@@ -43,7 +43,7 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
             // Leading
             if (widget.item.leading != null)
               SizedBox(
-                width: menuTheme.minPoint.width,
+                width: menuTheme.minSize.width,
                 child: widget.item.leading,
               ),
 
@@ -99,7 +99,7 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
                 child: ClipRect(
                   child: OverflowBox(
                     alignment: Alignment.centerLeft,
-                    maxWidth: menuTheme.maxPoint.width - pad.horizontal,
+                    maxWidth: menuTheme.maxSize.width - pad.horizontal,
                     child: header,
                   ),
                 ),

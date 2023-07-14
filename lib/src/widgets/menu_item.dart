@@ -120,7 +120,7 @@ class _MenuItemState extends State<MenuItem> {
                   indicatorAnimation: widget.destinationAnimation,
                   child: OverflowBox(
                     alignment: Alignment.centerLeft,
-                    maxWidth: menuTheme.maxPoint.width -
+                    maxWidth: menuTheme.maxSize.width -
                         menuTheme.itemMargin.horizontal,
                     child: Material(
                       type: MaterialType.transparency,
@@ -138,7 +138,7 @@ class _MenuItemState extends State<MenuItem> {
                             child: Row(
                               children: <Widget>[
                                 SizedBox(
-                                  width: menuTheme.minPoint.width,
+                                  width: menuTheme.minSize.width,
                                   child: IconTheme(
                                     data: !widget.item.enabled
                                         ? disabledIconTheme

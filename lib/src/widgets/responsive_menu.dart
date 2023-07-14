@@ -12,7 +12,7 @@ import 'widgets.dart';
 ///
 class ResponsiveMenu extends StatefulWidget {
   ///
-  ResponsiveMenu({
+  const ResponsiveMenu({
     required this.items,
     this.header,
     this.leading,
@@ -21,7 +21,7 @@ class ResponsiveMenu extends StatefulWidget {
     this.controller,
     this.onTap,
     super.key,
-  }) : theme = theme ?? RMenuTheme();
+  }) : theme = theme ?? const RMenuTheme();
 
   ///
   final List<RMenuItem> items;
@@ -39,7 +39,7 @@ class ResponsiveMenu extends StatefulWidget {
   final RMenuTheme theme;
 
   ///
-  final ValueChanged<DefaultMItem>? onTap;
+  final VoidCallback? onTap;
 
   ///
   final RMenuController? controller;
@@ -57,7 +57,6 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
   @override
   void initState() {
     super.initState();
-
     _menuController = (widget.controller ?? RMenuController())
       .._init(
         vsync: this,
@@ -148,7 +147,7 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
       _selectedItem = id;
     });
     item.onPressed?.call();
-    widget.onTap?.call(item);
+    widget.onTap?.call();
   }
 
   @override
@@ -157,12 +156,22 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
     if (widget.controller == null) {
       _menuController.dispose();
     }
+    print('R Menu Disposed ====>>>> ');
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    assert(
+      widget.theme.elevation == null || widget.theme.elevation! >= 0,
+      'Elevation cannot be less than 0',
+    );
+    assert(
+      widget.theme.maxSize >= widget.theme.minSize,
+      'Max width must be greater than min width',
+    );
+
     final localizations = MaterialLocalizations.of(context);
     final isRTLDirection = Directionality.of(context) == TextDirection.rtl;
 
@@ -183,6 +192,7 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
             // Content
             Expanded(
               child: ListView(
+                physics: const ClampingScrollPhysics(),
                 children: List.generate(widget.items.length, (i) {
                   final item = widget.items[i];
                   final sth = switch (item) {
@@ -246,8 +256,6 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
       );
     }
 
-    // SizeTransition(sizeFactor: sizeFactor)
-
     return AnimatedBuilder(
       animation: _menuController.animation,
       builder: (context, child) {
@@ -262,11 +270,6 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
           offset: Offset(dx, 0),
           child: SizedBox(
             width: width,
-            // child: OverflowBox(
-            //   maxWidth: math.max(minWidth, width),
-            //   alignment: Alignment.centerLeft,
-            //   child: child,
-            // ),
             child: child,
           ),
         );
@@ -277,11 +280,6 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
           controller: _menuController,
           child: Semantics(
             explicitChildNodes: true,
-            // child: OverflowBox(
-            //   maxWidth: 280,
-            //   alignment: Alignment.centerLeft,
-            //   child: child,
-            // ),
             child: child,
           ),
         ),
@@ -307,11 +305,10 @@ class RMenuController extends Listenable with ChangeNotifier {
   late Animation<double> _positionAnimation;
   late RMenuTheme _menuTheme;
   late MenuState _currentState;
-  // RMenuType? _usePreference;
   VoidCallback? _animationListener;
 
-  Animation<double>? _maxWidth;
-  Animation<double>? _minWidth;
+  // Animation<double>? _maxWidth;
+  // Animation<double>? _minWidth;
 
   int _direction = -1;
 
@@ -321,36 +318,24 @@ class RMenuController extends Listenable with ChangeNotifier {
     required RMenuTheme menuTheme,
   }) {
     _menuTheme = menuTheme;
+    _currentState = menuTheme.maxState;
     _controller = AnimationController(
       duration: kThemeAnimationDuration,
+      value: _currentState.value,
       vsync: vsync,
     );
+    _initAnimations();
     notifyListeners();
   }
 
   ///
-  void _update(RMenuTheme menuTheme) {
-    if (_menuTheme.maxPoint.width != menuTheme.maxPoint.width &&
-        _currentState == _menuTheme.maxState) {
-      _onMaxWidthChange(menuTheme);
-    } else if ((_menuTheme.minPoint.width != menuTheme.minPoint.width ||
-            _menuTheme.itemMargin.horizontal !=
-                menuTheme.itemMargin.horizontal) &&
-        _currentState == _menuTheme.minState) {
-      _onMinWidthChange(menuTheme);
-    }
-    _menuTheme = menuTheme;
-    notifyListeners();
-  }
-
-  ///
-  void _initAnimations(RMenuTheme theme) {
+  void _initAnimations() {
     _positionAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _controller,
         curve: Interval(
           0,
-          theme.railPercent,
+          _menuTheme.railPercent,
           curve: Curves.easeIn,
         ),
       ),
@@ -359,96 +344,108 @@ class RMenuController extends Listenable with ChangeNotifier {
       CurvedAnimation(
         parent: _controller,
         curve: Interval(
-          theme.railPercent,
+          _menuTheme.railPercent,
           1,
           curve: Curves.easeIn,
         ),
       ),
     );
-    print('Test.....');
   }
 
   ///
-  void _holdAnimations() {
-    // Hold size animation
-    _sizeAnimation = Tween<double>(
-      begin: _sizeAnimation.value,
-      end: _sizeAnimation.value,
-    ).animate(_controller);
-
-    // Hold position animation
-    _positionAnimation = Tween<double>(
-      begin: _positionAnimation.value,
-      end: _positionAnimation.value,
-    ).animate(_controller);
-  }
-
-  ///
-  void _holdSizes({bool max = true, bool min = true}) {
-    // Hold max width
-    if (_maxWidth != null && max) {
-      _maxWidth = Tween<double>(
-        begin: _maxWidth!.value,
-        end: _maxWidth!.value,
-      ).animate(_controller);
+  void _update(RMenuTheme menuTheme) {
+    if (_menuTheme.maxSize.width != menuTheme.maxSize.width &&
+        _currentState == _menuTheme.maxState) {
+      // _onMaxWidthChange(menuTheme);
+      _initAnimations();
+    } else if ((_menuTheme.minSize.width != menuTheme.minSize.width ||
+            _menuTheme.itemMargin.horizontal !=
+                menuTheme.itemMargin.horizontal) &&
+        _currentState == _menuTheme.minState) {
+      // _onMinWidthChange(menuTheme);
+      _initAnimations();
     }
-
-    // Hold min width
-    if (_minWidth != null && min) {
-      _minWidth = Tween<double>(
-        begin: _minWidth!.value,
-        end: _minWidth!.value,
-      ).animate(_controller);
-    }
+    _menuTheme = menuTheme;
+    notifyListeners();
   }
 
-  ///
-  void _onMaxWidthChange(RMenuTheme menuTheme) {
-    _maxWidth = Tween<double>(
-      begin: _menuTheme.maxPoint.width,
-      end: menuTheme.maxPoint.width,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeIn,
-      ),
-    );
-    _holdSizes(max: false);
-    _holdAnimations();
-    _controller
-      ..reset()
-      ..forward();
-    // .then((_) {
-    //   _initAnimations(menuTheme);
-    // });
-  }
+  // ///
+  // void _holdAnimations() {
+  //   // Hold size animation
+  //   _sizeAnimation = Tween<double>(
+  //     begin: _sizeAnimation.value,
+  //     end: _sizeAnimation.value,
+  //   ).animate(_controller);
 
-  ///
-  void _onMinWidthChange(RMenuTheme menuTheme) {
-    _minWidth = Tween<double>(
-      begin: _menuTheme.minWidth,
-      end: menuTheme.minWidth,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeIn,
-      ),
-    );
-    _holdSizes(min: false);
-    _holdAnimations();
-    _controller
-      ..reset()
-      ..forward();
-    // .then((_) {
-    //   _initAnimations(menuTheme);
-    // });
-  }
+  //   // Hold position animation
+  //   _positionAnimation = Tween<double>(
+  //     begin: _positionAnimation.value,
+  //     end: _positionAnimation.value,
+  //   ).animate(_controller);
+  // }
+
+  // ///
+  // void _holdSizes({bool max = true, bool min = true}) {
+  //   // Hold max width
+  //   if (_maxWidth != null && max) {
+  //     _maxWidth = Tween<double>(
+  //       begin: _maxWidth!.value,
+  //       end: _maxWidth!.value,
+  //     ).animate(_controller);
+  //   }
+
+  //   // Hold min width
+  //   if (_minWidth != null && min) {
+  //     _minWidth = Tween<double>(
+  //       begin: _minWidth!.value,
+  //       end: _minWidth!.value,
+  //     ).animate(_controller);
+  //   }
+  // }
+
+  // ///
+  // void _onMaxWidthChange(RMenuTheme menuTheme) {
+  //   _maxWidth = Tween<double>(
+  //     begin: _menuTheme.maxSize.width,
+  //     end: menuTheme.maxSize.width,
+  //   ).animate(
+  //     CurvedAnimation(
+  //       parent: _controller,
+  //       curve: Curves.easeIn,
+  //     ),
+  //   );
+  //   _holdSizes(max: false);
+  //   _holdAnimations();
+  //   _controller
+  //     ..reset()
+  //     ..forward();
+  // }
+
+  // ///
+  // void _onMinWidthChange(RMenuTheme menuTheme) {
+  //   _minWidth = Tween<double>(
+  //     begin: _menuTheme.minWidth,
+  //     end: menuTheme.minWidth,
+  //   ).animate(
+  //     CurvedAnimation(
+  //       parent: _controller,
+  //       curve: Curves.easeIn,
+  //     ),
+  //   );
+  //   _holdSizes(min: false);
+  //   _holdAnimations();
+  //   _controller
+  //     ..reset()
+  //     ..forward();
+  // }
 
   ///
   void _onBreakpointInit(MapEntry<MenuState, double>? breakpoint) {
-    _currentState = breakpoint?.key ?? _menuTheme.maxState;
+    final stateBasedOnSize = breakpoint?.key ?? _menuTheme.maxState;
+    if (stateBasedOnSize == _currentState) return;
+    _currentState = stateBasedOnSize;
     _direction = _currentState == _menuTheme.maxState ? -1 : 1;
-    _initAnimations(_menuTheme);
+    _initAnimations();
     _controller.value = _currentState.value;
     notifyListeners();
   }
@@ -486,6 +483,8 @@ class RMenuController extends Listenable with ChangeNotifier {
     });
   }
 
+  //  ============================== PUBLIC API's ==============================
+
   ///
   Animation<double> get animation => _controller.view;
 
@@ -504,10 +503,10 @@ class RMenuController extends Listenable with ChangeNotifier {
   MenuState get currentState => _currentState;
 
   ///
-  double get minWidth => _minWidth?.value ?? _menuTheme.minWidth;
+  double get minWidth => _menuTheme.minWidth;
 
   ///
-  double get maxWidth => _maxWidth?.value ?? _menuTheme.maxPoint.width;
+  double get maxWidth => _menuTheme.maxSize.width;
 
   ///
   void addAnimationListener(VoidCallback listener) {
@@ -530,8 +529,8 @@ class RMenuController extends Listenable with ChangeNotifier {
     } else if (cuttentIndex == defaultStates.length - 1 && _direction == 1) {
       _direction = -1;
     }
-    _holdSizes();
-    _initAnimations(_menuTheme);
+    // _holdSizes();
+    // _initAnimations();
     _updateState(defaultStates[cuttentIndex + _direction]);
   }
 

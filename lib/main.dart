@@ -39,7 +39,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     final theme = Theme.of(context);
     // NavigationRail
 
-    return RScaffold(
+    return ResponsiveScaffold(
       menu: RMenu(
         // type: RMenuType.rail, // TODO(kopan7): In mobile this should not consider
         theme: RMenuTheme(
@@ -69,6 +69,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           // itemMargin: const EdgeInsets.symmetric(horizontal: 16),
           // maxPoint: const RPoint.max(width: 350),
           // minPoint: const RPoint.min(width: 70),
+          //
+          // =>>> In min state => Update Max Size => Issue
+          maxSize: const RSize(
+            width: 300,
+            breakpoint: 900,
+          ),
+          minSize: const RSize(
+            width: 52,
+            breakpoint: 600,
+          ),
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(

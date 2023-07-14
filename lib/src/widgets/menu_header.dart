@@ -66,12 +66,12 @@ class ResponsiveMenuHeader extends StatelessWidget {
         child: ClipRRect(
           child: OverflowBox(
             alignment: Alignment.centerLeft,
-            maxWidth: menuTheme.maxPoint.width - pad.horizontal,
+            maxWidth: menuTheme.maxSize.width - pad.horizontal,
             child: Row(
               children: [
                 // Avatar
                 SizedBox(
-                  width: menuTheme.minPoint.width,
+                  width: menuTheme.minSize.width,
                   child: avatar ??
                       CircleAvatar(
                         backgroundColor: theme.colorScheme.primary,

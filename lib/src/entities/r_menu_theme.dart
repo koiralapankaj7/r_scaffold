@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +25,7 @@ const double _kSmallWidthBreakpoint = 600;
 ///
 class RMenuTheme {
   ///
-  RMenuTheme({
+  const RMenuTheme({
     this.itemMargin = const EdgeInsets.symmetric(
       horizontal: 8,
       vertical: 2,
@@ -44,18 +45,12 @@ class RMenuTheme {
     this.dividerAboveThemeData,
     this.dividerBelowThemeData,
     this.decoration,
-    this.minPoint = const RPoint.min(),
-    this.maxPoint = const RPoint.max(),
+    RSize? minSize,
+    RSize? maxSize,
     this.closable = false,
     this.responsive = true,
-  })  : assert(
-          elevation == null || elevation >= 0,
-          'Elevation cannot be less than 0',
-        ),
-        assert(
-          maxPoint >= minPoint,
-          'Max width must be greater than min width',
-        );
+  })  : minSize = minSize ?? RSize.min,
+        maxSize = maxSize ?? RSize.max;
 
   ///
   static RMenuTheme of(BuildContext context) => maybeOf(context)!;
@@ -116,15 +111,15 @@ class RMenuTheme {
   final EdgeInsetsGeometry itemMargin; //=>
 
   ///
-  final RPoint minPoint; //=>
+  final RSize minSize; //=>
 
   ///
-  final RPoint maxPoint; //=>
+  final RSize maxSize; //=>
 
-  /// default to false, if true menu will be hidden based on state
+  /// default to false, if true menu can be completly closed based on state
   final bool closable; //=>
 
-  /// default to true, while resizing the screen menu state will be updated.
+  /// default to true, while resizing the screen menu, state will be updated.
   final bool responsive;
 
   ///
@@ -133,47 +128,91 @@ class RMenuTheme {
     return switch (indicatorShape) {
       RoundedRectangleBorder(:final borderRadius) =>
         borderRadius.resolve(direction),
-      _ => BorderRadius.circular(minPoint.width * 0.5),
+      _ => BorderRadius.circular(minSize.width * 0.5),
     };
+  }
+
+  ///
+  RMenuTheme copyWith({
+    Color? backgroundColor,
+    double? elevation,
+    TextStyle? unselectedLabelTextStyle,
+    TextStyle? selectedLabelTextStyle,
+    TextStyle? disabledLabelTextStyle,
+    IconThemeData? unselectedIconTheme,
+    IconThemeData? selectedIconTheme,
+    IconThemeData? disabledIconTheme,
+    bool? useIndicator,
+    Color? indicatorColor,
+    ShapeBorder? indicatorShape,
+    BorderRadius? radius,
+    DividerThemeData? dividerAboveThemeData,
+    DividerThemeData? dividerBelowThemeData,
+    BoxDecoration? decoration,
+    bool? responsive,
+    bool? closable,
+    EdgeInsetsGeometry? itemMargin,
+    RSize? minSize,
+    RSize? maxSize,
+  }) {
+    return RMenuTheme(
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      elevation: elevation ?? this.elevation,
+      unselectedLabelTextStyle:
+          unselectedLabelTextStyle ?? this.unselectedLabelTextStyle,
+      selectedLabelTextStyle:
+          selectedLabelTextStyle ?? this.selectedLabelTextStyle,
+      disabledLabelTextStyle:
+          disabledLabelTextStyle ?? this.disabledLabelTextStyle,
+      unselectedIconTheme: unselectedIconTheme ?? this.unselectedIconTheme,
+      selectedIconTheme: selectedIconTheme ?? this.selectedIconTheme,
+      disabledIconTheme: disabledIconTheme ?? this.disabledIconTheme,
+      useIndicator: useIndicator ?? this.useIndicator,
+      indicatorColor: indicatorColor ?? this.indicatorColor,
+      indicatorShape: indicatorShape ?? this.indicatorShape,
+      radius: radius ?? this.radius,
+      dividerAboveThemeData:
+          dividerAboveThemeData ?? this.dividerAboveThemeData,
+      dividerBelowThemeData:
+          dividerBelowThemeData ?? this.dividerBelowThemeData,
+      decoration: decoration ?? this.decoration,
+      responsive: responsive ?? this.responsive,
+      closable: closable ?? this.closable,
+      itemMargin: itemMargin ?? this.itemMargin,
+      maxSize: maxSize ?? this.maxSize,
+      minSize: minSize ?? this.minSize,
+    );
   }
 }
 
 ///
-class RPoint extends Equatable {
+class RSize extends Equatable {
   ///
-  const RPoint.min({
-    double? width,
-    double? breakpoint,
+  const RSize({
+    required this.width,
+    required this.breakpoint,
     this.duration,
     this.reverseDuration,
     this.curve,
     this.reverseCurve,
-  })  : width = width ?? _kRailWidth,
-        breakpoint = breakpoint ?? _kSmallWidthBreakpoint,
-        assert(
-          width == null || width > 0,
-          'Min width must be greater than 0',
-        );
+  });
 
-  ///
-  const RPoint.max({
-    double? width,
-    double? breakpoint,
-    this.duration,
-    this.reverseDuration,
-    this.curve,
-    this.reverseCurve,
-  })  : width = width ?? _kMenuWidth,
-        breakpoint = breakpoint ?? _kMediumWidthBreakpoint,
-        assert(
-          width == null || width > 0,
-          'Max width must be greater than 0',
-        );
+  /// Default min point
+  static const RSize min = RSize(
+    width: _kRailWidth,
+    breakpoint: _kSmallWidthBreakpoint,
+  );
 
-  /// Size
+  /// Defauult max point
+  static const RSize max = RSize(
+    width: _kMenuWidth,
+    breakpoint: _kMediumWidthBreakpoint,
+  );
+
+  /// Width of the menu
   final double width;
 
-  ///
+  /// Screen breakpoint to trigger this size
   final double breakpoint;
 
   /// Forward animation duration
@@ -187,6 +226,25 @@ class RPoint extends Equatable {
 
   /// Reverse animation curve
   final Curve? reverseCurve;
+
+  /// Helper function to copy object
+  RSize copyWith({
+    double? width,
+    double? breakpoint,
+    Duration? duration,
+    Duration? reverseDuration,
+    Curve? curve,
+    Curve? reverseCurve,
+  }) {
+    return RSize(
+      width: width ?? this.width,
+      breakpoint: breakpoint ?? this.breakpoint,
+      duration: duration ?? this.duration,
+      reverseDuration: reverseDuration ?? this.reverseDuration,
+      curve: curve ?? this.curve,
+      reverseCurve: reverseCurve ?? this.reverseCurve,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -208,20 +266,28 @@ sealed class MenuState extends Equatable {
   });
 
   ///
-  const factory MenuState.closed({RPoint? point}) = ClosedState;
+  const factory MenuState.closed({RSize? point}) = ClosedState;
 
   ///
-  const factory MenuState.min({required double value, RPoint? point}) =
-      MinState;
+  const factory MenuState.min({required double value, RSize? point}) = MinState;
 
   ///
-  const factory MenuState.max({RPoint? point}) = MaxState;
+  const factory MenuState.max({RSize? point}) = MaxState;
 
   ///
   final double value;
 
   ///
-  final RPoint? point;
+  final RSize? point;
+
+  ///
+  bool get isClosed => this is ClosedState;
+
+  ///
+  bool get isMin => this is MinState;
+
+  ///
+  bool get isMax => this is MaxState;
 }
 
 ///
@@ -269,24 +335,24 @@ class ResponsiveMenuTheme extends InheritedWidget {
 }
 
 ///
-extension RPointX on RPoint {
+extension RSizeX on RSize {
   ///
-  bool operator >(RPoint other) => width > other.width;
+  bool operator >(RSize other) => width > other.width;
 
   ///
-  bool operator >=(RPoint other) => width >= other.width;
+  bool operator >=(RSize other) => width >= other.width;
 
   ///
-  bool operator <(RPoint other) => width < other.width;
+  bool operator <(RSize other) => width < other.width;
 
   ///
-  bool operator <=(RPoint other) => width <= other.width;
+  bool operator <=(RSize other) => width <= other.width;
 
   ///
-  double operator +(RPoint other) => width + other.width;
+  double operator +(RSize other) => width + other.width;
 
   ///
-  double operator -(RPoint other) => width - other.width;
+  double operator -(RSize other) => width - other.width;
 }
 
 ///
@@ -301,16 +367,16 @@ extension MenuStateX on MenuState {
 ///
 extension RMenuThemeX on RMenuTheme {
   ///
-  double get minWidth => minPoint.width + itemMargin.horizontal;
+  double get minWidth => minSize.width + itemMargin.horizontal;
 
   ///
-  double get railPercent => minWidth / maxPoint.width;
+  double get railPercent => minWidth / maxSize.width;
 
   ///
-  MenuState get minState => MenuState.min(value: railPercent, point: minPoint);
+  MenuState get minState => MenuState.min(value: railPercent, point: minSize);
 
   ///
-  MenuState get maxState => MenuState.max(point: maxPoint);
+  MenuState get maxState => MenuState.max(point: maxSize);
 
   ///
   MenuState get closedState => const MenuState.closed();
@@ -318,8 +384,8 @@ extension RMenuThemeX on RMenuTheme {
   ///
   Iterable<MapEntry<MenuState, double>> get breakpoints => responsive
       ? [
-          MapEntry(closedState, minPoint.breakpoint),
-          MapEntry(minState, maxPoint.breakpoint),
+          MapEntry(closedState, minSize.breakpoint),
+          MapEntry(minState, maxSize.breakpoint),
         ]
       : [];
 }
