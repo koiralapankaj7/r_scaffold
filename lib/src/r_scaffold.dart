@@ -7,10 +7,38 @@ import 'package:playground/src/extensions.dart';
 import 'entities/entities.dart';
 import 'widgets/widgets.dart';
 
-/// Responsive Scaffold
-class RScaffold extends StatefulWidget {
+///
+@immutable
+class RMenu {
   ///
-  const RScaffold({
+  const RMenu({
+    required this.items,
+    this.header,
+    this.leading,
+    this.trailing,
+    RMenuTheme? theme,
+  }) : theme = theme ?? const RMenuTheme();
+
+  ///
+  final List<RMenuItem> items;
+
+  ///
+  final ResponsiveMenuHeader? header;
+
+  ///
+  final Widget? leading;
+
+  ///
+  final Widget? trailing;
+
+  ///
+  final RMenuTheme theme;
+}
+
+/// Responsive Scaffold
+class ResponsiveScaffold extends StatefulWidget {
+  ///
+  const ResponsiveScaffold({
     required this.menu,
     required this.body,
     super.key,
@@ -107,365 +135,135 @@ class RScaffold extends StatefulWidget {
   ///
   final bool extendBody;
 
-  ///
-  static Animation<double> sizeAnimation(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<_ExtendedNavigationRailAnimation>()!
-        .sizeAnimation;
-  }
-
   @override
-  State<RScaffold> createState() => _RScaffoldState();
+  State<ResponsiveScaffold> createState() => _ResponsiveScaffoldState();
 }
 
 ///
-class _RScaffoldState extends State<RScaffold>
-    with SingleTickerProviderStateMixin, BreakpointAware {
+class _ResponsiveScaffoldState extends State<ResponsiveScaffold> {
   final _key = GlobalKey<ScaffoldState>();
   late final RMenuController _menuController;
-
-  RMenuTheme get menuTheme => widget.menu.theme;
 
   @override
   void initState() {
     super.initState();
-    _menuController = RMenuController()
-      .._init(
-        vsync: this,
-        menu: widget.menu,
-      )
-      ..addListener(_rebuild);
+    _menuController = RMenuController()..addListener(_menuListener);
   }
 
-  void _rebuild() {
-    setState(() {
-      // Rebuilding when any of the controllers tick, i.e. when the items are
-      // animating.
-    });
-  }
-
-  @override
-  void didUpdateWidget(RScaffold oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.menu.theme.railMaxWidth != oldWidget.menu.theme.railMaxWidth) {
-      _didMaxWidthChange(oldWidget.menu.theme.railMaxWidth);
-    }
-    if (widget.menu.theme.minWidth != oldWidget.menu.theme.minWidth) {
-      _didMinWidthChange(oldWidget.menu.theme.minWidth);
-    }
-    if (widget.menu.type != oldWidget.menu.type) {
-      // _moveTo(_valueFor(widget.menu.type));
-      // _menuController.switchType(widget.menu.type);
+  void _menuListener() {
+    if (!_menuController.currentState.isClosed &&
+        _key.currentState!.isDrawerOpen) {
+      // _key.currentState!.closeDrawer();
     }
   }
-
-  void _didMaxWidthChange(double old) {
-    // // If not in extended mode dont do anything
-    // if (_controller.value != 1.0) return;
-    // if (widget.menu.theme.maxWidth > old) {
-    //   // increased
-    //   final oldValue =
-    //       (widget.menu.theme.maxWidth - old) / widget.menu.theme.maxWidth;
-    //   _controller
-    //     ..value = oldValue
-    //     ..animateTo(
-    //       1,
-    //       duration: kThemeAnimationDuration,
-    //       curve: Curves.easeIn,
-    //     );
-    // } else {
-    //   // decreased
-    // }
-  }
-
-  void _didMinWidthChange(double old) {
-    if (widget.menu.theme.minWidth > old) {
-      // increased
-    } else {
-      // decreased
-    }
-  }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   _shortcutsEntry?.dispose();
-  //   // Collect the shortcuts from the different menu selections so that they can
-  //   // be registered to apply to the entire app. Menus don't register their
-  //   // shortcuts, they only display the shortcut hint text.
-  //   final shortcuts = <ShortcutActivator, Intent>{
-  //     for (final item in widget.menu.header!.dropdownItems)
-  //       if (item.shortcut != null)
-  //         item.shortcut!: VoidCallbackIntent(() => item.onPressed?.call()),
-  //   };
-  //   // Register the shortcuts with the ShortcutRegistry so that they are
-  //   // available to the entire application.
-  //   _shortcutsEntry = ShortcutRegistry.of(context).addAll(shortcuts);
-  // }
 
   AppBar _appBar() => (widget.appBar ?? AppBar()).copyWith(
-        // Some logic to show the implicit menu button on AppBar when
-        // there is no rail or menu.
-        // automaticallyImplyLeading:
-        //     _current.isDrawer && !_extendedController.isAnimating,
         leading: IconButton(
           padding: EdgeInsets.zero,
           icon: const Icon(Icons.menu),
           onPressed: () {
-            // if (_menuController.type.isDrawer) {
-            //   _key.currentState?.openDrawer();
-            // } else {
-            //   _menuController.toggle();
-            // }
-            _menuController.toggle();
+            if (_menuController.currentState is ClosedState) {
+              _key.currentState?.openDrawer();
+            } else {
+              _menuController.toggle();
+            }
           },
         ),
       );
 
   @override
   void dispose() {
-    _menuController.dispose();
+    _menuController
+      ..removeListener(_menuListener)
+      ..dispose();
     super.dispose();
   }
-
-  @override
-  RBreakPoint get breakpoint => widget.menu.theme.breakPoint;
-
-  @override
-  void onBreakpointInit(String screen) =>
-      _menuController._onBreakpointInit(screen);
-
-  @override
-  void onBreakpointChange(String screen, bool forward) =>
-      _menuController._onBreakpointChange(screen, forward);
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return _ExtendedNavigationRailAnimation(
-      sizeAnimation: _menuController.sizeAnimation,
-      child: Scaffold(
-        key: _key,
-        appBar: _appBar(),
-        // The menu content when used in the Drawer.
-        drawer: ConstrainedBox(
-          constraints: BoxConstraints.expand(
-            width: menuTheme.railMaxWidth,
-          ),
-          child: Drawer(
-            child: ResponsiveMenu(
-              menu: widget.menu,
-              extendedAnimation: Tween<double>(begin: 1, end: 1)
-                  .animate(_menuController.sizeAnimation),
-              onTap: (item) {
-                item.onPressed?.call();
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
+    final responsiveMenu = ResponsiveMenu(
+      items: widget.menu.items,
+      header: widget.menu.header,
+      leading: widget.menu.leading,
+      trailing: widget.menu.trailing,
+      theme: widget.menu.theme,
+      // type: widget.menu.type,
+      // onTap: _menuController.currentState.isClosed
+      //     ? Navigator.of(context).pop
+      //     : null,
+      controller: _menuController,
+    );
+
+    return Scaffold(
+      key: _key,
+      appBar: _appBar(),
+      drawer: ConstrainedBox(
+        constraints: BoxConstraints.expand(
+          width: widget.menu.theme.maxSize.width,
         ),
-        floatingActionButton: widget.floatingActionButton,
-        floatingActionButtonLocation: widget.floatingActionButtonLocation,
-        floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
-        persistentFooterButtons: widget.persistentFooterButtons,
-        onDrawerChanged: widget.onDrawerChanged,
-        endDrawer: widget.endDrawer,
-        onEndDrawerChanged: widget.onEndDrawerChanged,
-        bottomNavigationBar: widget.bottomNavigationBar,
-        bottomSheet: widget.bottomSheet,
-        backgroundColor: widget.backgroundColor,
-        resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
-        primary: widget.primary,
-        drawerDragStartBehavior: widget.drawerDragStartBehavior,
-        extendBody: widget.extendBody,
-        extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
-        drawerScrimColor: widget.drawerScrimColor,
-        drawerEdgeDragWidth: widget.drawerEdgeDragWidth,
-        // drawerEnableOpenDragGesture: !isDesktop && state == RailState.close,
-        endDrawerEnableOpenDragGesture: widget.endDrawerEnableOpenDragGesture,
-        restorationId: widget.restorationId,
-        body: CustomMultiChildLayout(
-          delegate: _ResponsiveBodyLayout(
-            minWidth: menuTheme.minWidth,
-            maxWidth: menuTheme.railMaxWidth,
-            sizeFactor: _menuController.sizeAnimation.value,
-            positionFactor: _menuController.positionAnimation.value,
-          ),
-          children: [
-            LayoutId(
-              id: 'body',
-              child: widget.body,
-            ),
-            LayoutId(
-              id: 'menu',
-              child: ResponsiveMenu(
-                menu: widget.menu,
-                extendedAnimation: _menuController.sizeAnimation,
-                onTap: (item) {
-                  item.onPressed?.call();
-                },
-              ),
-            ),
-          ],
+        child: Drawer(
+          child: responsiveMenu,
+          // child: ResponsiveMenu(
+          //   items: widget.menu.items,
+          //   header: widget.menu.header,
+          //   leading: widget.menu.leading,
+          //   trailing: widget.menu.trailing,
+          //   theme: widget.menu.theme,
+          //   // .copyWith(
+          //   //   responsive: false,
+          //   // ),
+          //   onTap: Navigator.of(context).pop,
+          // ),
         ),
+      ),
+      floatingActionButton: widget.floatingActionButton,
+      floatingActionButtonLocation: widget.floatingActionButtonLocation,
+      floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
+      persistentFooterButtons: widget.persistentFooterButtons,
+      onDrawerChanged: widget.onDrawerChanged,
+      endDrawer: widget.endDrawer,
+      onEndDrawerChanged: widget.onEndDrawerChanged,
+      bottomNavigationBar: widget.bottomNavigationBar,
+      bottomSheet: widget.bottomSheet,
+      backgroundColor: widget.backgroundColor,
+      resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
+      primary: widget.primary,
+      drawerDragStartBehavior: widget.drawerDragStartBehavior,
+      extendBody: widget.extendBody,
+      extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
+      drawerScrimColor: widget.drawerScrimColor,
+      drawerEdgeDragWidth: widget.drawerEdgeDragWidth,
+      // drawerEnableOpenDragGesture: !isDesktop && state == RailState.close,
+      endDrawerEnableOpenDragGesture: widget.endDrawerEnableOpenDragGesture,
+      restorationId: widget.restorationId,
+      body: CustomMultiChildLayout(
+        delegate: _BodyLayout(),
+        children: [
+          LayoutId(
+            id: 'body',
+            child: widget.body,
+          ),
+          LayoutId(
+            id: 'menu',
+            child: responsiveMenu,
+            // child: ResponsiveMenu(
+            //   items: widget.menu.items,
+            //   header: widget.menu.header,
+            //   leading: widget.menu.leading,
+            //   trailing: widget.menu.trailing,
+            //   theme: widget.menu.theme,
+            //   // type: widget.menu.type,
+            //   controller: _menuController,
+            // ),
+          ),
+        ],
       ),
     );
   }
 }
 
 ///
-class RMenuController extends Listenable with ChangeNotifier {
-  late AnimationController _controller;
-  late Animation<double> _sizeAnimation;
-  late Animation<double> _positionAnimation;
-  late RMenu _menu;
-  late RMenuType _prevType;
-  late RMenuType _currentType;
-  // RMenuType? _usePreference;
-
-  void _init({
-    required TickerProvider vsync,
-    required RMenu menu,
-  }) {
-    _menu = menu;
-    _controller = AnimationController(
-      duration: kThemeAnimationDuration,
-      vsync: vsync,
-    );
-    _positionAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(
-          0,
-          menu.theme.railPercent,
-          curve: Curves.easeIn,
-        ),
-      ),
-    );
-    _sizeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(
-          menu.theme.railPercent,
-          1,
-          curve: Curves.easeIn,
-        ),
-      ),
-    );
-  }
-
-  ///
-  double _valueFor(RMenuType type) => switch (type) {
-        RMenuType.drawer => 0,
-        RMenuType.rail => _menu.theme.railPercent,
-        RMenuType.extended => 1,
-      };
-
-  RMenuType _typeFromString(String type) {
-    return switch (type) {
-      'S' => RMenuType.drawer,
-      'M' => RMenuType.rail,
-      'L' => RMenuType.extended,
-      _ => throw UnsupportedError('Screen type not found!'),
-    };
-  }
-
-  void _onBreakpointInit(String screen) {
-    _currentType = _prevType = _menu.type ?? _typeFromString(screen);
-    _controller.value = _valueFor(_currentType);
-  }
-
-  void _onBreakpointChange(String screen, bool forward) {
-    _move(_typeFromString(screen), forward: forward);
-  }
-
-  void _move(RMenuType type, {bool? forward}) {
-    if (_currentType == type) return;
-    _moveTo(_valueFor(type), forward ?? type > _currentType);
-  }
-
-  void _moveTo(double target, bool forward) {
-    if (_controller.isAnimating) return;
-    (forward
-            ? _controller.animateTo(target, duration: kThemeAnimationDuration)
-            : _controller.animateBack(
-                target,
-                duration: kThemeAnimationDuration,
-              ))
-        .then((_) {
-      _prevType = _currentType;
-      _currentType = switch (target) {
-        0.0 => RMenuType.drawer,
-        1.0 => RMenuType.extended,
-        _ => RMenuType.rail,
-      };
-      notifyListeners();
-    });
-  }
-
-  ///
-  Animation<double> get sizeAnimation => _sizeAnimation;
-
-  ///
-  Animation<double> get positionAnimation => _positionAnimation;
-
-  ///
-  RMenuType get type => _currentType;
-
-  ///
-  @override
-  void addListener(VoidCallback listener) {
-    _controller.addListener(listener);
-  }
-
-  /// Toggle between Extended and Rail
-  /// Nothing happens in drawer mode
-  void toggle() {
-    if (_currentType.isDrawer) return;
-    // _usePreference = true;
-    if (_currentType.isExtended) {
-      _moveTo(_menu.theme.railPercent, false);
-      // _usePreference = RMenuType.rail;
-    } else if (_currentType.isRail) {
-      _moveTo(1, true);
-      // _usePreference = RMenuType.extended;
-    }
-  }
-
-  /// Keep toogle between state.
-  /// Nothing happens in drawer mode
-  void next() {
-    // if (_currentType.isDrawer) return;
-    final next = _currentType.isDrawer || _currentType.isExtended
-        ? RMenuType.rail
-        : _currentType > _prevType
-            ? RMenuType.extended
-            : RMenuType.drawer;
-    // _usePreference = true;
-    _move(next);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-}
-
-///
-class _ResponsiveBodyLayout extends MultiChildLayoutDelegate {
-  _ResponsiveBodyLayout({
-    required this.minWidth,
-    required this.maxWidth,
-    required this.positionFactor,
-    required this.sizeFactor,
-  });
-
-  final double minWidth;
-  final double maxWidth;
-  final double sizeFactor;
-  final double positionFactor;
-
+class _BodyLayout extends MultiChildLayoutDelegate {
   @override
   void performLayout(Size size) {
     final looseConstraints = BoxConstraints.loose(size);
@@ -473,18 +271,8 @@ class _ResponsiveBodyLayout extends MultiChildLayoutDelegate {
     late Size menuSize;
     // Menu
     if (hasChild('menu')) {
-      menuSize = layoutChild(
-        'menu',
-        BoxConstraints.tight(size).enforce(
-          BoxConstraints(
-            maxWidth: minWidth + (maxWidth - minWidth) * sizeFactor,
-          ),
-        ),
-      );
-      positionChild(
-        'menu',
-        Offset(-minWidth * (1 - positionFactor), 0),
-      );
+      menuSize = layoutChild('menu', BoxConstraints.loose(size));
+      positionChild('menu', Offset.zero);
     }
 
     // Body
@@ -496,34 +284,13 @@ class _ResponsiveBodyLayout extends MultiChildLayoutDelegate {
           height: size.height,
         ),
       );
-      positionChild('body', Offset(menuSize.width * positionFactor, 0));
+      positionChild(
+        'body',
+        Offset(menuSize.width, 0),
+      );
     }
   }
 
   @override
-  bool shouldRelayout(_ResponsiveBodyLayout oldDelegate) =>
-      oldDelegate.maxWidth != maxWidth ||
-      oldDelegate.minWidth != minWidth ||
-      oldDelegate.sizeFactor != sizeFactor ||
-      oldDelegate.positionFactor != positionFactor;
+  bool shouldRelayout(_BodyLayout oldDelegate) => false;
 }
-
-// ==============================================================
-
-class _ExtendedNavigationRailAnimation extends InheritedWidget {
-  const _ExtendedNavigationRailAnimation({
-    required this.sizeAnimation,
-    required super.child,
-  });
-
-  final Animation<double> sizeAnimation;
-
-  @override
-  bool updateShouldNotify(_ExtendedNavigationRailAnimation old) =>
-      sizeAnimation != old.sizeAnimation;
-}
-
-// class _ItemSelectNotification extends Notification {
-//   _ItemSelectNotification(this.item);
-//   final _ResponsiveMenuItem item;
-// }

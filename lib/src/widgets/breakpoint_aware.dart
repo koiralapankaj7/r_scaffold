@@ -1,56 +1,51 @@
 // ignore_for_file: always_use_package_imports
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-import '../entities/entities.dart';
-
 ///
-mixin BreakpointAware<T extends StatefulWidget> on State<T> {
-  String _currentType = 'N';
+mixin BreakpointAware<T extends StatefulWidget, V extends Object> on State<T> {
+  V? _currentType;
   Size? _prevSize;
+  List<MapEntry<V, double>>? _sortedBreakpoints;
 
   ///
   // ignore: avoid_positional_boolean_parameters
-  void onBreakpointChange(String screen, bool forward) {}
+  void onBreakpointChange(MapEntry<V, double>? breakpoint, bool forward) {}
 
   ///
-  void onBreakpointInit(String screen) {}
+  void onBreakpointInit(MapEntry<V, double>? breakpoint) {}
 
-  String _getSize(Size size) {
-    if (size.width < breakpoint.drawer) return 'S';
-    if (size.width >= breakpoint.drawer && size.width < breakpoint.rail) {
-      return 'M';
+  MapEntry<V, double>? _getSize(Size size) {
+    MapEntry<V, double>? bp;
+    for (var i = 0; i < _sortedBreakpoints!.length; i++) {
+      final breakpoint = _sortedBreakpoints![i];
+      if (size.width < breakpoint.value) {
+        bp = breakpoint;
+        break;
+      }
     }
-    return 'L';
+    return bp;
   }
 
   void _didSizeChanged(Size size) {
-    if (_prevSize == size) return;
-
+    if (_prevSize == size || breakpoints.isEmpty) return;
+    _sortedBreakpoints ??=
+        breakpoints.sorted((a, b) => a.value.compareTo(b.value));
+    final bp = _getSize(size);
     if (_prevSize != null) {
-      if (size.width < breakpoint.drawer) {
-        if (_currentType != 'S') {
-          onBreakpointChange('S', size.width > _prevSize!.width);
-          _currentType = 'S';
-        }
-      } else if (size.width >= breakpoint.drawer &&
-          size.width < breakpoint.rail) {
-        if (_currentType != 'M') {
-          onBreakpointChange('M', size.width > _prevSize!.width);
-          _currentType = 'M';
-        }
-      } else if (_currentType != 'L') {
-        onBreakpointChange('L', size.width > _prevSize!.width);
-        _currentType = 'L';
+      if (bp?.key != _currentType) {
+        onBreakpointChange(bp, size.width > _prevSize!.width);
       }
     } else {
-      onBreakpointInit(_getSize(size));
+      onBreakpointInit(bp);
     }
+    _currentType = bp?.key;
     _prevSize = size;
   }
 
   ///
-  RBreakPoint get breakpoint;
+  Iterable<MapEntry<V, double>> get breakpoints;
 
   @mustCallSuper
   @override
@@ -66,7 +61,7 @@ class _NullWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     throw FlutterError(
-      'Widgets that mix AutomaticKeepAliveClientMixin into their State must '
+      'Widgets that mix BreakpointAware into their State must '
       'call super.build() but must ignore the return value of the superclass.',
     );
   }
