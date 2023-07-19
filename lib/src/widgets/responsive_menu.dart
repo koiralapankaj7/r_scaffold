@@ -262,10 +262,13 @@ class _ResponsiveMenuState extends State<ResponsiveMenu>
         final minWidth = _menuController.minWidth;
         final maxWidth = _menuController.maxWidth;
 
-        final dx = -minWidth * (1 - _menuController.positionAnimation.value);
-        final width = (minWidth * _menuController.positionAnimation.value) +
-            (maxWidth - minWidth) * _menuController.sizeAnimation.value;
+        final dx = -minWidth * (1 - _menuController._positionAnimation.value);
+        final width = (minWidth * _menuController._positionAnimation.value) +
+            (maxWidth - minWidth) * _menuController._sizeAnimation.value;
 
+        print(
+          '${_menuController.positionAnimation.value} : ${_menuController.sizeAnimation.value}',
+        );
         return Transform.translate(
           offset: Offset(dx, 0),
           child: SizedBox(
@@ -304,7 +307,7 @@ class RMenuController extends Listenable with ChangeNotifier {
   late Animation<double> _sizeAnimation;
   late Animation<double> _positionAnimation;
   late RMenuTheme _menuTheme;
-  late MenuState _currentState;
+  MenuState _currentState = const MenuState.closed();
   VoidCallback? _animationListener;
 
   // Animation<double>? _maxWidth;
@@ -350,6 +353,7 @@ class RMenuController extends Listenable with ChangeNotifier {
         ),
       ),
     );
+    print('Test... ${_positionAnimation.value} : ${_sizeAnimation.value}');
   }
 
   ///
