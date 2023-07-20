@@ -10,10 +10,8 @@ class MenuItem extends StatefulWidget {
   ///
   const MenuItem({
     required this.id,
-    required this.menuTheme,
     required this.item,
     required this.destinationAnimation,
-    required this.extendedTransitionAnimation,
     required this.selected,
     required this.onTap,
     required this.indexLabel,
@@ -24,9 +22,6 @@ class MenuItem extends StatefulWidget {
   final String id;
 
   ///
-  final RMenuTheme menuTheme;
-
-  ///
   final DefaultMItem item;
 
   ///
@@ -34,9 +29,6 @@ class MenuItem extends StatefulWidget {
 
   ///
   final bool selected;
-
-  ///
-  final Animation<double> extendedTransitionAnimation;
 
   ///
   final VoidCallback onTap;
@@ -59,11 +51,9 @@ class _MenuItemState extends State<MenuItem> {
 
   @override
   Widget build(BuildContext context) {
-    final menuTheme = widget.menuTheme;
-
-    final labelFadeAnimation = widget.extendedTransitionAnimation.drive(
-      CurveTween(curve: const Interval(0.20, 1)),
-    );
+    final menuTheme = RMenuQuery.themeOf(context);
+    // final maxSize = RMenuQuery.maxWidthOf(context);
+    // final minSize = RMenuQuery.minWidthOf(context);
 
     final theme = Theme.of(context);
     final isLight = theme.brightness == Brightness.light;
@@ -103,79 +93,74 @@ class _MenuItemState extends State<MenuItem> {
 
     final borderRadius = menuTheme.resolveRadius(Directionality.of(context));
 
-    final child = Padding(
-      padding: menuTheme.itemMargin,
-      child: SizedBox(
-        height: widget.item.height,
-        child: ClipRRect(
-          borderRadius: borderRadius,
-          child: Semantics(
-            container: true,
-            selected: widget.selected,
-            child: Stack(
-              children: <Widget>[
-                MenuItemIndicator(
-                  addIndicator: menuTheme.useIndicator,
-                  menuTheme: menuTheme,
-                  indicatorAnimation: widget.destinationAnimation,
-                  child: OverflowBox(
-                    alignment: Alignment.centerLeft,
-                    maxWidth: menuTheme.maxSize.width -
-                        menuTheme.itemMargin.horizontal,
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: InkWell(
-                        onTap:
-                            widget.item.enabled ? () => widget.onTap() : null,
-                        borderRadius: borderRadius,
-                        customBorder: menuTheme.indicatorShape,
-                        splashColor: colors.primary.withOpacity(0.12),
-                        hoverColor: colors.primary.withOpacity(0.06),
-                        child: Padding(
-                          padding: widget.item.padding ?? EdgeInsets.zero,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              children: <Widget>[
-                                SizedBox(
-                                  width: menuTheme.minSize.width,
-                                  child: IconTheme(
-                                    data: !widget.item.enabled
-                                        ? disabledIconTheme
+    final child = SizedBox(
+      height: widget.item.height,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Semantics(
+          container: true,
+          selected: widget.selected,
+          child: Stack(
+            children: <Widget>[
+              MenuItemIndicator(
+                addIndicator: menuTheme.useIndicator,
+                menuTheme: menuTheme,
+                indicatorAnimation: widget.destinationAnimation,
+                child: OverflowBox(
+                  alignment: Alignment.centerLeft,
+                  maxWidth: RMenuQuery.maxWidthOf(context),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      onTap: widget.item.enabled ? () => widget.onTap() : null,
+                      borderRadius: borderRadius,
+                      customBorder: menuTheme.indicatorShape,
+                      splashColor: colors.primary.withOpacity(0.12),
+                      hoverColor: colors.primary.withOpacity(0.06),
+                      child: Padding(
+                        padding: widget.item.padding ?? EdgeInsets.zero,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: <Widget>[
+                              SizedBox(
+                                width: RMenuQuery.minWidthOf(context),
+                                child: IconTheme(
+                                  data: !widget.item.enabled
+                                      ? disabledIconTheme
+                                      : widget.selected
+                                          ? selectedIconTheme
+                                          : unselectedIconTheme,
+                                  child: widget.selected
+                                      ? widget.item.selectedIcon
+                                      : widget.item.icon,
+                                ),
+                              ),
+                              Expanded(
+                                child: FadeTransition(
+                                  alwaysIncludeSemantics: true,
+                                  opacity: RMenuQuery.fadeAnimationOf(context),
+                                  child: DefaultTextStyle(
+                                    style: !widget.item.enabled
+                                        ? disabledLabelTextStyle
                                         : widget.selected
-                                            ? selectedIconTheme
-                                            : unselectedIconTheme,
-                                    child: widget.selected
-                                        ? widget.item.selectedIcon
-                                        : widget.item.icon,
+                                            ? selectedLabelTextStyle
+                                            : unselectedLabelTextStyle,
+                                    maxLines: 1,
+                                    child: widget.item.label,
                                   ),
                                 ),
-                                Expanded(
-                                  child: FadeTransition(
-                                    alwaysIncludeSemantics: true,
-                                    opacity: labelFadeAnimation,
-                                    child: DefaultTextStyle(
-                                      style: !widget.item.enabled
-                                          ? disabledLabelTextStyle
-                                          : widget.selected
-                                              ? selectedLabelTextStyle
-                                              : unselectedLabelTextStyle,
-                                      maxLines: 1,
-                                      child: widget.item.label,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                Semantics(label: widget.indexLabel),
-              ],
-            ),
+              ),
+              Semantics(label: widget.indexLabel),
+            ],
           ),
         ),
       ),

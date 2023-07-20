@@ -1,9 +1,8 @@
 // ignore_for_file: always_use_package_imports
 
 import 'package:flutter/material.dart';
-import 'package:playground/src/widgets/widgets.dart';
 
-import '../entities/entities.dart';
+import 'widgets.dart';
 
 /// Example of a leading item for the entire menu.
 class ResponsiveMenuHeader extends StatelessWidget {
@@ -48,15 +47,14 @@ class ResponsiveMenuHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryTextTheme = theme.primaryTextTheme;
-
-    final menuTheme = RMenuTheme.of(context);
-    final labelFadeAnimation = RMenuController.of(context).sizeAnimation.drive(
-          CurveTween(curve: const Interval(0.20, 1)),
-        );
+    // final menuTheme = RMenuQuery.themeOf(context);
+    // final labelFadeAnimation = RMenuQuery.sizeAnimationOf(context).drive(
+    //   CurveTween(curve: const Interval(0.20, 1)),
+    // );
 
     final pad = padding ??
-        EdgeInsets.symmetric(
-          horizontal: menuTheme.itemMargin.horizontal * 0.5,
+        const EdgeInsets.symmetric(
+          // horizontal: menuTheme.itemMargin.horizontal * 0.5,
           vertical: 16,
         );
 
@@ -66,12 +64,14 @@ class ResponsiveMenuHeader extends StatelessWidget {
         child: ClipRRect(
           child: OverflowBox(
             alignment: Alignment.centerLeft,
-            maxWidth: menuTheme.maxSize.width - pad.horizontal,
+            // maxWidth: menuTheme.maxSize.width - pad.horizontal,
+            maxWidth: 380 - pad.horizontal,
             child: Row(
               children: [
                 // Avatar
                 SizedBox(
-                  width: menuTheme.minSize.width,
+                  // width: menuTheme.minSize.width,
+                  width: 52,
                   child: avatar ??
                       CircleAvatar(
                         backgroundColor: theme.colorScheme.primary,
@@ -88,7 +88,7 @@ class ResponsiveMenuHeader extends StatelessWidget {
                 // Body
                 Expanded(
                   child: FadeTransition(
-                    opacity: labelFadeAnimation,
+                    opacity: RMenuQuery.fadeAnimationOf(context),
                     child: Row(
                       children: [
                         // Title spacing

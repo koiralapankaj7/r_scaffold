@@ -35,7 +35,8 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    final menuTheme = RMenuTheme.of(context);
+    // final menuTheme = RMenuQuery.themeOf(context);
+    // final maxSize = RMenuQuery.maxWidthOf(context);
 
     final header = widget.item.builder?.call(context, _toogle) ??
         Row(
@@ -43,7 +44,8 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
             // Leading
             if (widget.item.leading != null)
               SizedBox(
-                width: menuTheme.minSize.width,
+                // width: menuTheme.minSize.width,
+                width: 52,
                 child: widget.item.leading,
               ),
 
@@ -56,7 +58,7 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
                     Expanded(
                       child: FadeTransition(
                         alwaysIncludeSemantics: true,
-                        opacity: RMenuController.of(context).fadeAnimation,
+                        opacity: RMenuQuery.fadeAnimationOf(context),
                         child: Padding(
                           padding: const EdgeInsets.only(left: 16),
                           child: DefaultTextStyle(
@@ -80,7 +82,7 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
           ],
         );
 
-    final pad = menuTheme.itemMargin;
+    // final pad = menuTheme.itemMargin;
     return Column(
       children: [
         // Header
@@ -95,11 +97,14 @@ class _MenuItemDropdownState extends State<MenuItemDropdown> {
             child: SizedBox(
               height: widget.item.height,
               child: Padding(
-                padding: pad,
+                // padding: pad,
+                padding: EdgeInsets.zero,
                 child: ClipRect(
                   child: OverflowBox(
                     alignment: Alignment.centerLeft,
-                    maxWidth: menuTheme.maxSize.width - pad.horizontal,
+                    // maxWidth: menuTheme.maxSize.width - pad.horizontal,
+                    // maxWidth: 380 - pad.horizontal,
+                    maxWidth: RMenuQuery.maxWidthOf(context),
                     child: header,
                   ),
                 ),

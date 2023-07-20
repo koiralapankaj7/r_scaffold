@@ -11,7 +11,7 @@ mixin BreakpointAware<T extends StatefulWidget, V extends Object> on State<T> {
 
   ///
   // ignore: avoid_positional_boolean_parameters
-  void onBreakpointChange(MapEntry<V, double>? breakpoint, bool forward) {}
+  void onBreakpointChange(MapEntry<V, double>? breakpoint, int direction) {}
 
   ///
   void onBreakpointInit(MapEntry<V, double>? breakpoint) {}
@@ -35,7 +35,7 @@ mixin BreakpointAware<T extends StatefulWidget, V extends Object> on State<T> {
     final bp = _getSize(size);
     if (_prevSize != null) {
       if (bp?.key != _currentType) {
-        onBreakpointChange(bp, size.width > _prevSize!.width);
+        onBreakpointChange(bp, size.width > _prevSize!.width ? 1 : -1);
       }
     } else {
       onBreakpointInit(bp);

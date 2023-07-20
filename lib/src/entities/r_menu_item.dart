@@ -73,6 +73,8 @@ abstract interface class RMenuItem {
   final DividerThemeData? dividerBelowThemeData;
 
   ///
+
+  ///
   final String? tooltip;
 }
 

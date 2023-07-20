@@ -26,10 +26,6 @@ const double _kSmallWidthBreakpoint = 600;
 class RMenuTheme {
   ///
   const RMenuTheme({
-    this.itemMargin = const EdgeInsets.symmetric(
-      horizontal: 8,
-      vertical: 2,
-    ),
     this.backgroundColor,
     this.elevation,
     this.unselectedLabelTextStyle,
@@ -45,22 +41,17 @@ class RMenuTheme {
     this.dividerAboveThemeData,
     this.dividerBelowThemeData,
     this.decoration,
-    RSize? minSize,
-    RSize? maxSize,
-    this.closable = false,
-    this.responsive = true,
-  })  : minSize = minSize ?? RSize.min,
-        maxSize = maxSize ?? RSize.max;
+  });
 
-  ///
-  static RMenuTheme of(BuildContext context) => maybeOf(context)!;
+  // ///
+  // static RMenuTheme of(BuildContext context) => maybeOf(context)!;
 
-  ///
-  static RMenuTheme? maybeOf(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<ResponsiveMenuTheme>()
-        ?.theme;
-  }
+  // ///
+  // static RMenuTheme? maybeOf(BuildContext context) {
+  //   return context
+  //       .dependOnInheritedWidgetOfExactType<ResponsiveMenuTheme>()
+  //       ?.theme;
+  // }
 
   ///
   final Color? backgroundColor;
@@ -108,28 +99,14 @@ class RMenuTheme {
   final BoxDecoration? decoration;
 
   ///
-  final EdgeInsetsGeometry itemMargin; //=>
-
-  ///
-  final RSize minSize; //=>
-
-  ///
-  final RSize maxSize; //=>
-
-  /// default to false, if true menu can be completly closed based on state
-  final bool closable; //=>
-
-  /// default to true, while resizing the screen menu, state will be updated.
-  final bool responsive;
-
-  ///
   BorderRadius resolveRadius(TextDirection? direction) {
     if (radius != null) return radius!;
-    return switch (indicatorShape) {
-      RoundedRectangleBorder(:final borderRadius) =>
-        borderRadius.resolve(direction),
-      _ => BorderRadius.circular(minSize.width * 0.5),
-    };
+    // return switch (indicatorShape) {
+    //   RoundedRectangleBorder(:final borderRadius) =>
+    //     borderRadius.resolve(direction),
+    //   _ => BorderRadius.circular(minSize.width * 0.5),
+    // };
+    return BorderRadius.circular(8);
   }
 
   ///
@@ -151,7 +128,6 @@ class RMenuTheme {
     BoxDecoration? decoration,
     bool? responsive,
     bool? closable,
-    EdgeInsetsGeometry? itemMargin,
     RSize? minSize,
     RSize? maxSize,
   }) {
@@ -176,11 +152,6 @@ class RMenuTheme {
       dividerBelowThemeData:
           dividerBelowThemeData ?? this.dividerBelowThemeData,
       decoration: decoration ?? this.decoration,
-      responsive: responsive ?? this.responsive,
-      closable: closable ?? this.closable,
-      itemMargin: itemMargin ?? this.itemMargin,
-      maxSize: maxSize ?? this.maxSize,
-      minSize: minSize ?? this.minSize,
     );
   }
 }
@@ -257,82 +228,7 @@ class RSize extends Equatable {
       ];
 }
 
-///
-///
-sealed class MenuState extends Equatable {
-  const MenuState._({
-    required this.value,
-    this.point,
-  });
-
-  ///
-  const factory MenuState.closed({RSize? point}) = ClosedState;
-
-  ///
-  const factory MenuState.min({required double value, RSize? point}) = MinState;
-
-  ///
-  const factory MenuState.max({RSize? point}) = MaxState;
-
-  ///
-  final double value;
-
-  ///
-  final RSize? point;
-
-  ///
-  bool get isClosed => this is ClosedState;
-
-  ///
-  bool get isMin => this is MinState;
-
-  ///
-  bool get isMax => this is MaxState;
-}
-
-///
-class ClosedState extends MenuState {
-  ///
-  const ClosedState({super.point}) : super._(value: 0);
-
-  @override
-  List<Object?> get props => ['closed'];
-}
-
-///
-class MinState extends MenuState {
-  ///
-  const MinState({required super.value, super.point}) : super._();
-
-  @override
-  List<Object?> get props => ['min'];
-}
-
-///
-class MaxState extends MenuState {
-  ///
-  const MaxState({super.point}) : super._(value: 1);
-
-  @override
-  List<Object?> get props => ['max'];
-}
-
-///
-class ResponsiveMenuTheme extends InheritedWidget {
-  ///
-  const ResponsiveMenuTheme({
-    required this.theme,
-    required super.child,
-    super.key,
-  });
-
-  ///
-  final RMenuTheme theme;
-
-  @override
-  bool updateShouldNotify(covariant ResponsiveMenuTheme oldWidget) =>
-      oldWidget.theme != theme;
-}
+enum MenuState { closed, min, max }
 
 ///
 extension RSizeX on RSize {
@@ -355,37 +251,37 @@ extension RSizeX on RSize {
   double operator -(RSize other) => width - other.width;
 }
 
+// ///
+// extension MenuStateX on MenuState {
+//   ///
+//   bool operator >(MenuState other) => value > other.value;
+
+//   ///
+//   bool operator <(MenuState other) => value < other.value;
+// }
+
 ///
-extension MenuStateX on MenuState {
-  ///
-  bool operator >(MenuState other) => value > other.value;
+// extension RMenuThemeX on RMenuTheme {
+  // ///
+  // double get minWidth => minSize.width + itemMargin.horizontal;
+
+  // ///
+  // double get railPercent => minWidth / maxSize.width;
 
   ///
-  bool operator <(MenuState other) => value < other.value;
-}
+  // MenuState get minState => MenuState.min(value: railPercent, point: minSize);
 
-///
-extension RMenuThemeX on RMenuTheme {
-  ///
-  double get minWidth => minSize.width + itemMargin.horizontal;
+  // ///
+  // MenuState get maxState => MenuState.max(point: maxSize);
 
-  ///
-  double get railPercent => minWidth / maxSize.width;
+  // ///
+  // MenuState get closedState => const MenuState.closed();
 
-  ///
-  MenuState get minState => MenuState.min(value: railPercent, point: minSize);
-
-  ///
-  MenuState get maxState => MenuState.max(point: maxSize);
-
-  ///
-  MenuState get closedState => const MenuState.closed();
-
-  ///
-  Iterable<MapEntry<MenuState, double>> get breakpoints => responsive
-      ? [
-          MapEntry(closedState, minSize.breakpoint),
-          MapEntry(minState, maxSize.breakpoint),
-        ]
-      : [];
-}
+  // ///
+  // Iterable<MapEntry<MenuState, double>> get breakpoints => responsive
+  //     ? [
+  //         MapEntry(MenuState.closed, minSize.breakpoint),
+  //         MapEntry(MenuState.min, maxSize.breakpoint),
+  //       ]
+  //     : [];
+// }

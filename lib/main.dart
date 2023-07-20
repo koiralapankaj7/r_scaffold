@@ -42,6 +42,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return ResponsiveScaffold(
       menu: RMenu(
         // type: RMenuType.rail, // TODO(kopan7): In mobile this should not consider
+        //  maxSize: const RSize(
+        //     width: 300,
+        //     breakpoint: 900,
+        //   ),
+        //   minSize: const RSize(
+        //     width: 52,
+        //     breakpoint: 600,
+        //   ),
         theme: RMenuTheme(
           elevation: 0,
           // backgroundColor: Colors.amber,
@@ -71,14 +79,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           // minPoint: const RPoint.min(width: 70),
           //
           // =>>> In min state => Update Max Size => Issue
-          maxSize: const RSize(
-            width: 300,
-            breakpoint: 900,
-          ),
-          minSize: const RSize(
-            width: 52,
-            breakpoint: 600,
-          ),
+
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -152,7 +153,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               // label: Text('Item $index'),
               label: Row(
                 children: [
-                  Expanded(child: Text('Item $index')),
+                  Expanded(
+                    child: Text('Item thorai thulo Item thorai thulo $index'),
+                  ),
                   const SizedBox(width: 16),
                   const Icon(Icons.remove),
                   // const SizedBox(width: 16),
@@ -162,9 +165,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               dividerBelow: index == 5 || index == 8,
               enabled: index != 5,
               // height: 60,
-              tooltip: 'Item $index',
+              tooltip: 'Item thorai thulo $index',
               onPressed: () {
-                debugPrint('Item $index');
+                debugPrint('Item thorai thulo $index');
               },
             );
           }),
@@ -197,7 +200,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             builder: (context) {
               return Container(
                 height: 100,
-                color: Colors.amber,
+                color: Colors.black,
               );
             },
           ),
