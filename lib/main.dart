@@ -90,7 +90,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ],
           ),
         ),
-        header: ResponsiveMenuHeader(
+        header: RMenuHeader(
           // onPressed: () {},
           avatarLabel: 'PK',
           title: const Text('Pankaj Koirala'),

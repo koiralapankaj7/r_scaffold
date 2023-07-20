@@ -1,7 +1,10 @@
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:playground/src/entities/entities.dart';
+import 'package:playground/src/responsive_scaffold.dart';
+import 'package:playground/src/widgets/responsive_menu.dart';
 
 enum _RMenuQueryAspect {
   minWidth,
@@ -11,6 +14,7 @@ enum _RMenuQueryAspect {
   positionAnimation,
   fadeAnimation,
   state,
+  borderRadius,
 }
 
 ///
@@ -49,6 +53,16 @@ class RMenuData extends Equatable {
       : sizeAnimation.drive(
           CurveTween(curve: const Interval(0.20, 1)),
         );
+
+  ///
+  BorderRadius resolveRadius({TextDirection? direction}) {
+    if (theme.radius != null) return theme.radius!;
+    return switch (theme.indicatorShape) {
+      RoundedRectangleBorder(:final borderRadius) =>
+        borderRadius.resolve(direction),
+      _ => BorderRadius.circular(minWidth * 0.5),
+    };
+  }
 
   @override
   List<Object?> get props => [
@@ -123,6 +137,14 @@ class RMenuQuery extends InheritedModel<_RMenuQueryAspect> {
   static Animation<double> fadeAnimationOf(BuildContext context) =>
       _of(context, _RMenuQueryAspect.fadeAnimation).fadeAnimation;
 
+  ///
+  static BorderRadius borderRadiusOf(
+    BuildContext context, {
+    TextDirection? direction,
+  }) =>
+      _of(context, _RMenuQueryAspect.borderRadius)
+          .resolveRadius(direction: direction);
+
   @override
   bool updateShouldNotify(RMenuQuery oldWidget) => oldWidget.data != data;
 
@@ -153,6 +175,9 @@ class RMenuQuery extends InheritedModel<_RMenuQueryAspect> {
             oldWidget.data.positionAnimation != data.positionAnimation,
           _RMenuQueryAspect.fadeAnimation =>
             oldWidget.data.fadeAnimation != data.fadeAnimation,
+          _RMenuQueryAspect.borderRadius => oldWidget.data.theme.radius !=
+                  data.theme.radius ||
+              oldWidget.data.theme.indicatorShape != data.theme.indicatorShape,
         };
       }
     }
@@ -168,21 +193,21 @@ bool _debugCheckHasRMenuQuery(BuildContext context) {
           context.getElementForInheritedWidgetOfExactType<RMenuQuery>() ==
               null) {
         throw FlutterError.fromParts(<DiagnosticsNode>[
-          ErrorSummary('No MediaQuery widget ancestor found.'),
+          ErrorSummary('No RMenuQuery widget ancestor found.'),
           ErrorDescription(
-            '${context.widget.runtimeType} widgets require a MediaQuery widget ancestor.',
+            '${context.widget.runtimeType} widgets require a RMenuQuery widget ancestor.',
           ),
           context.describeWidget(
-            'The specific widget that could not find a MediaQuery ancestor was',
+            'The specific widget that could not find a RMenuQuery ancestor was',
           ),
           context.describeOwnershipChain(
             'The ownership chain for the affected widget is',
           ),
           ErrorHint(
-              'No MediaQuery ancestor could be found starting from the context '
-              'that was passed to MediaQuery.of(). This can happen because the '
+              'No RMenuQuery ancestor could be found starting from the context '
+              'that was passed to RMenuQuery.of(). This can happen because the '
               'context used is not a descendant of a View widget, which introduces '
-              'a MediaQuery.'),
+              'a RMenuQuery.'),
         ]);
       }
       return true;

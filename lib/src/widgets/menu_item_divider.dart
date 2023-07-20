@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../entities/entities.dart';
+import 'widgets.dart';
 
 ///
 class MenuItemDivider extends StatelessWidget {

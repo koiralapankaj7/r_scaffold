@@ -1,4 +1,4 @@
-export 'src/entities/entities.dart'
-    hide CustomMItem, DefaultMItem, DropdownMItem;
 export 'src/responsive_scaffold.dart';
-export 'src/widgets/widgets.dart' show ResponsiveMenuHeader;
+export 'src/widgets/menu_header.dart';
+export 'src/widgets/responsive_menu.dart'
+    show RMenuItem, RMenuItemLayout, RMenuTheme;

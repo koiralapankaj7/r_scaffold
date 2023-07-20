@@ -2,24 +2,16 @@
 
 import 'package:flutter/material.dart';
 
-import '../entities/entities.dart';
+import 'widgets.dart';
 
 ///
 class MenuItemIndicator extends StatelessWidget {
   ///
   const MenuItemIndicator({
-    required this.addIndicator,
-    required this.menuTheme,
     required this.indicatorAnimation,
     required this.child,
     super.key,
   });
-
-  ///
-  final RMenuTheme menuTheme;
-
-  ///
-  final bool addIndicator;
 
   ///
   final Animation<double> indicatorAnimation;
@@ -29,7 +21,9 @@ class MenuItemIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!addIndicator) {
+    final menuTheme = RMenuQuery.themeOf(context);
+
+    if (!menuTheme.useIndicator) {
       return child;
     }
 
@@ -39,7 +33,10 @@ class MenuItemIndicator extends StatelessWidget {
         Positioned.fill(
           child: NavigationIndicator(
             animation: indicatorAnimation,
-            borderRadius: menuTheme.resolveRadius(Directionality.of(context)),
+            borderRadius: RMenuQuery.borderRadiusOf(
+              context,
+              direction: Directionality.of(context),
+            ),
             shape: menuTheme.indicatorShape,
             color: menuTheme.indicatorColor ??
                 Theme.of(context).primaryColor.withOpacity(0.2),

@@ -1,11 +1,112 @@
 // ignore_for_file: always_use_package_imports
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:playground/src/extensions.dart';
+import 'package:flutter/services.dart';
 
-import 'entities/entities.dart';
 import 'widgets/widgets.dart';
+
+// The default width of the side menu when expanded to full menu.
+const double _kMenuWidth = 296;
+
+// The default width of the side menu when collapsed to a rail.
+const double _kRailWidth = 68;
+
+// The minimum media size needed for desktop/large tablet menu view.
+// Only at higher than this breakpoint will the menu open and be possible
+// to toggle between menu and rail. Below this breakpoint it toggles between
+// hidden in the Drawer and rail, also on phones. This is just the default
+// value for the constructor and it can be set differently in the
+// ResponsiveScaffold constructor.
+const double _kMediumWidthBreakpoint = 900;
+
+///
+const double _kSmallWidthBreakpoint = 600;
+
+///
+class RSize extends Equatable {
+  ///
+  const RSize({
+    required this.width,
+    required this.breakpoint,
+    this.duration,
+    this.reverseDuration,
+    this.curve,
+    this.reverseCurve,
+  });
+
+  /// Default min point
+  static const RSize min = RSize(
+    width: _kRailWidth,
+    breakpoint: _kSmallWidthBreakpoint,
+  );
+
+  /// Defauult max point
+  static const RSize max = RSize(
+    width: _kMenuWidth,
+    breakpoint: _kMediumWidthBreakpoint,
+  );
+
+  /// Width of the menu
+  final double width;
+
+  /// Screen breakpoint to trigger this size
+  final double breakpoint;
+
+  /// Forward animation duration
+  final Duration? duration;
+
+  /// Reverse animation duration
+  final Duration? reverseDuration;
+
+  /// Forward animation curve
+  final Curve? curve;
+
+  /// Reverse animation curve
+  final Curve? reverseCurve;
+
+  /// Helper function to copy object
+  RSize copyWith({
+    double? width,
+    double? breakpoint,
+    Duration? duration,
+    Duration? reverseDuration,
+    Curve? curve,
+    Curve? reverseCurve,
+  }) {
+    return RSize(
+      width: width ?? this.width,
+      breakpoint: breakpoint ?? this.breakpoint,
+      duration: duration ?? this.duration,
+      reverseDuration: reverseDuration ?? this.reverseDuration,
+      curve: curve ?? this.curve,
+      reverseCurve: reverseCurve ?? this.reverseCurve,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        width,
+        breakpoint,
+        duration,
+        reverseDuration,
+        curve,
+        reverseCurve,
+      ];
+}
+
+///
+enum MenuState {
+  ///
+  closed,
+
+  ///
+  min,
+
+  ///
+  max
+}
 
 ///
 @immutable
@@ -29,7 +130,7 @@ class RMenu {
   final List<RMenuItem> items;
 
   ///
-  final ResponsiveMenuHeader? header;
+  final RMenuHeader? header;
 
   ///
   final Widget? leading;
@@ -52,6 +153,10 @@ class RMenu {
   ///
   final MenuState? state;
 }
+
+//
+// =============================ResponsiveScaffold==============================
+//
 
 /// Responsive Scaffold
 class ResponsiveScaffold extends StatefulWidget {
@@ -290,7 +395,8 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold>
   Widget build(BuildContext context) {
     super.build(context);
     final menuData = RMenuData(
-      minWidth: widget.menu.minSize.width,
+      minWidth:
+          widget.menu.minSize.width, // + widget.menu.itemMargin.horizontal,
       maxWidth: widget.menu.maxSize.width,
       theme: widget.menu.theme,
       state: _currentState,
@@ -383,6 +489,10 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold>
   }
 }
 
+//
+// ==============================_BodyLayout=================================
+//
+
 ///
 enum _ScaffoldItem { menu, body }
 
@@ -437,11 +547,90 @@ class _BodyLayout extends MultiChildLayoutDelegate {
       oldDelegate.position != position || oldDelegate.sizeFactor != sizeFactor;
 }
 
+//
+// ==============================Extensions=================================
+//
+
 extension on RMenu {
   Iterable<MapEntry<MenuState, double>> get breakpoints {
     return [
       MapEntry(MenuState.closed, minSize.breakpoint),
       MapEntry(MenuState.min, maxSize.breakpoint),
     ];
+  }
+}
+
+///
+extension RAppBarX on AppBar {
+  ///
+  AppBar copyWith({
+    Key? key,
+    Widget? leading,
+    bool? automaticallyImplyLeading,
+    Widget? title,
+    List<Widget>? actions,
+    Widget? flexibleSpace,
+    PreferredSizeWidget? bottom,
+    double? elevation,
+    double? scrolledUnderElevation,
+    Color? shadowColor,
+    Color? surfaceTintColor,
+    Color? backgroundColor,
+    Color? foregroundColor,
+    IconThemeData? iconTheme,
+    IconThemeData? actionsIconTheme,
+    bool? primary,
+    bool? centerTitle,
+    bool? excludeHeaderSemantics,
+    double? titleSpacing,
+    ShapeBorder? shape,
+    double? toolbarHeight,
+    double? leadingWidth,
+    TextStyle? toolbarTextStyle,
+    TextStyle? titleTextStyle,
+    SystemUiOverlayStyle? systemOverlayStyle,
+    bool? forceMaterialTransparency,
+    Clip? clipBehavior,
+    double? toolbarOpacity,
+    double? bottomOpacity,
+    ScrollNotificationPredicate? notificationPredicate,
+  }) {
+    return AppBar(
+      key: key ?? this.key,
+      title: title ?? this.title,
+      bottom: bottom ?? this.bottom,
+      elevation: elevation ?? this.elevation,
+      scrolledUnderElevation:
+          scrolledUnderElevation ?? this.scrolledUnderElevation,
+      shadowColor: shadowColor ?? this.shadowColor,
+      surfaceTintColor: surfaceTintColor ?? this.surfaceTintColor,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      foregroundColor: foregroundColor ?? this.foregroundColor,
+      iconTheme: iconTheme ?? this.iconTheme,
+      actionsIconTheme: actionsIconTheme ?? this.actionsIconTheme,
+      primary: primary ?? this.primary,
+      centerTitle: centerTitle ?? this.centerTitle,
+      excludeHeaderSemantics:
+          excludeHeaderSemantics ?? this.excludeHeaderSemantics,
+      titleSpacing: titleSpacing ?? this.titleSpacing,
+      shape: shape ?? this.shape,
+      toolbarOpacity: toolbarOpacity ?? this.toolbarOpacity,
+      bottomOpacity: bottomOpacity ?? this.bottomOpacity,
+      toolbarHeight: toolbarHeight ?? this.toolbarHeight,
+      leadingWidth: leadingWidth ?? this.leadingWidth,
+      toolbarTextStyle: toolbarTextStyle ?? this.toolbarTextStyle,
+      titleTextStyle: titleTextStyle ?? this.titleTextStyle,
+      systemOverlayStyle: systemOverlayStyle ?? this.systemOverlayStyle,
+      forceMaterialTransparency:
+          forceMaterialTransparency ?? this.forceMaterialTransparency,
+      actions: actions ?? this.actions,
+      automaticallyImplyLeading:
+          automaticallyImplyLeading ?? this.automaticallyImplyLeading,
+      clipBehavior: clipBehavior ?? this.clipBehavior,
+      flexibleSpace: flexibleSpace ?? this.flexibleSpace,
+      leading: leading ?? this.leading,
+      notificationPredicate:
+          notificationPredicate ?? this.notificationPredicate,
+    );
   }
 }
