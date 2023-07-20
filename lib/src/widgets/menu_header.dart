@@ -47,30 +47,19 @@ class RMenuHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryTextTheme = theme.primaryTextTheme;
-    // final menuTheme = RMenuQuery.themeOf(context);
-    // final labelFadeAnimation = RMenuQuery.sizeAnimationOf(context).drive(
-    //   CurveTween(curve: const Interval(0.20, 1)),
-    // );
-
-    final pad = padding ??
-        const EdgeInsets.symmetric(
-          // horizontal: menuTheme.itemMargin.horizontal * 0.5,
-          vertical: 16,
-        );
 
     final child = RMenuItemLayout(
       margin: EdgeInsets.zero,
       builder: (child) {
         return Padding(
-          padding: pad,
-          child: IntrinsicHeight(
-            child: child,
-          ),
+          padding: padding ?? const EdgeInsets.symmetric(vertical: 8),
+          child: child,
         );
       },
       icon: avatar ??
           CircleAvatar(
             backgroundColor: theme.colorScheme.primary,
+            radius: 26,
             child: Text(
               avatarLabel ?? '',
               style: primaryTextTheme.titleMedium?.copyWith(

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import '../responsive_scaffold.dart';
 import 'widgets.dart';
 
-const _kDefaultHeight = 54.0;
+const _kDefaultHeight = 52.0;
 
 ///
 typedef RMenuItemBuilder = Widget Function(
